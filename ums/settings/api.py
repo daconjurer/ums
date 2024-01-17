@@ -1,0 +1,8 @@
+from pydantic import Field, IPvAnyAddress
+
+from ums.settings.base import CommonSettings
+
+
+class APISettings(CommonSettings):
+    api_host: IPvAnyAddress = Field(validation_alias="API_HOST", default="0.0.0.0")
+    api_port: int = Field(validation_alias="API_PORT", default=3000)
