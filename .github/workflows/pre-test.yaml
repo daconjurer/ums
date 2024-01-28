@@ -1,0 +1,20 @@
+name: pre-test
+
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'ci/3/add-ci-pipeline'
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - 
+        name: Checkout code
+        uses: actions/checkout@v4
+      -
+        name: pre-test
+        uses: ./.github/actions/pre-test/
