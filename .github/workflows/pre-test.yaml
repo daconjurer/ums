@@ -9,7 +9,7 @@ on:
 
 jobs:
   test:
-    name: test
+    name: pre-test
     runs-on: ubuntu-latest
     steps:
       - 

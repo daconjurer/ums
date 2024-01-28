@@ -11,9 +11,19 @@ jobs:
   test:
     name: test
     runs-on: ubuntu-latest
+    environment: demo
     strategy:
       matrix:
         python-version: [3.10, 3.11]
+    env:
+      SECRET_KEY: ${ {secrets.ACCESS_TOKEN_EXPIRE_MINUTES} }
+      HASHING_ALGORITHM: ${ {secrets.HASHING_ALGORITHM} }
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ {secrets.ACCESS_TOKEN_EXPIRE_MINUTES} }
+      POSTGRES_USER: ${ {secrets.POSTGRES_USER} }
+      POSTGRES_PASSWORD: ${ {secrets.POSTGRES_PASSWORD} }
+      POSTGRES_DB: ${ {secrets.POSTGRES_DB} }
+      POSTGRES_HOST: ${ {secrets.POSTGRES_HOST} }
+      POSTGRES_PORT: ${ {secrets.POSTGRES_PORT} }
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
