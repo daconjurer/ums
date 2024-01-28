@@ -1,9 +1,9 @@
-from typing import Type, Sequence
+from typing import Type
 from pydantic import BaseModel
 from ums.crud.base import BaseRepository, CreateSchema, UpdateSchema
 from ums.models import Role, Permissions
 
-from sqlmodel import Session, select, SQLModel
+from sqlmodel import SQLModel
 
 
 class RoleCreate(CreateSchema):

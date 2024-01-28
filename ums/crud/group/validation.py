@@ -17,7 +17,7 @@ class GroupValidator:
         # Check members_ids are valid
         group_users = []
         if input_object_data.get("members_ids"):
-            statement = select(User).where(User.is_active == True)
+            statement = select(User).where(User.is_active == True)  # noqa: E712
             active_users = db.scalars(statement).all()
 
             if active_users:
