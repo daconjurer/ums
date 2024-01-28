@@ -1,5 +1,4 @@
 #! /bin/bash
-#! /bin/bash
 
 echo "ruff check --diff ums/"
 ruff check --diff ums/

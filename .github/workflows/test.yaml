@@ -1,0 +1,25 @@
+name: test
+
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'ci/3/add-ci-pipeline'
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.10, 3.11]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Start database container
+        run: ./scripts/test_db.sh up
+
+      - name: Run tests
+        uses: ./.github/actions/test/

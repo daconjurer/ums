@@ -1,0 +1,6 @@
+name: "test"
+description: "Functional tests"
+runs:
+  using: "docker"
+  image: "dockerpaps/python-poetry:latest"
+  entrypoint: ".github/actions/test/run.sh"
