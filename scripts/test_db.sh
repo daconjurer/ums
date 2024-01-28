@@ -17,4 +17,4 @@ for arg in "$@"; do
     commands+=("$arg")
 done
 
-docker-compose -f $DOCKER_COMPOSE_FILE --env-file ../ums/.env-test "${commands[@]}"
+docker-compose -f $DOCKER_COMPOSE_FILE "${commands[@]}"
