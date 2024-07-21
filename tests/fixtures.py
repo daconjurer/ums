@@ -2,27 +2,20 @@ import pytest
 
 from uuid import UUID
 from ums.models import User, Group, Role, Permissions
-from ums.db.session import get_session, setup_db
+from ums.db.session import get_session, setup_db, drop_db
 from ums.core.security import get_password_hash
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def db():
     return next(get_session())
 
 
-import pytest
-
-from uuid import UUID
-
-from ums.models import User, Group, Role
-from ums.db.session import get_session, setup_db
-from ums.core.security import get_password_hash
-
-
-@pytest.fixture
-def db():
-    return next(get_session())
+@pytest.fixture(autouse=True)
+def setup_and_teardown_db():
+    setup_db()
+    yield
+    drop_db()
 
 
 @pytest.fixture
@@ -117,8 +110,6 @@ def initialized_groups(db):
 
 @pytest.fixture
 def initialized_users(db):
-    setup_db()
-
     test_user_1 = User(
         id=UUID("f18941a4-bb0e-444a-b6a0-a19509cc6089"),
         name="vic",
@@ -166,8 +157,6 @@ def initialized_admin(db, initialized_groups, initialized_roles):
     group_alpha, _, _ = initialized_groups
     admin_role, _, _ = initialized_roles
 
-    setup_db()
-
     current_user = User(
         id=UUID("6dd0434c-ca7f-4454-8bb8-d589b8a0ce99"),
         name="TheAdmin",
@@ -188,8 +177,6 @@ def initialized_admin(db, initialized_groups, initialized_roles):
 def initialized_maintainer(db, initialized_groups, initialized_roles):
     group_alpha, _, _ = initialized_groups
     _, maintainer_role, _ = initialized_roles
-
-    setup_db()
 
     current_user = User(
         id=UUID("ea1a76c1-3a1e-4952-a190-d510843b36a7"),
