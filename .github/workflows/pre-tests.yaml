@@ -1,0 +1,18 @@
+name: pre-tests
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+jobs:
+  lint-format-type:
+    name: Preliminary checks
+    runs-on: ubuntu-latest
+    steps:
+      - 
+        name: Checkout code
+        uses: actions/checkout@v4
+      -
+        name: Run linter, formatter, and type checker
+        uses: ./.github/actions/pre-test/

@@ -1,5 +1,5 @@
 from typing import Any
-from datetime import datetime, timezone
+from datetime import datetime
 from sqlmodel import Field, Relationship, SQLModel
 import uuid
 
