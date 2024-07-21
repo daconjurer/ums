@@ -4,7 +4,6 @@ from sqlmodel import and_, Session, select
 
 from ums.crud.base import BaseRepository, CreateSchema, UpdateSchema
 from ums.models import Permissions, RolePermissionLink
-from ums.middlewares.filter_sort import SortBy, FilterBy, SortOptions
 
 
 class PermissionsCreate(CreateSchema):
