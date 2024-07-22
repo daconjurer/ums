@@ -70,7 +70,7 @@ class TestBaseRepository:
 
         # Validation
         assert stored_object is not None
-        assert stored_object.model_dump() == test_record.model_dump()
+        assert stored_object.model_dump() == created_object.model_dump()
 
         # Clean-up
         ...
@@ -82,14 +82,17 @@ class TestBaseRepository:
         x = 1
         y = 10
         test_records = []
+        created_objects = []
 
         for _ in range(15):
             test_record = DummyModel(a=x, b=y)
             test_records.append(test_record)
-            self.test_crud_repository.add(
+
+            created_object = self.test_crud_repository.add(
                 db=self.test_db,
                 input_object=test_record,
             )
+            created_objects.append(created_object.model_copy(deep=True))
             x += 1
             y += 1
 
@@ -103,8 +106,9 @@ class TestBaseRepository:
         # Validation
         assert stored_objects is not None
         assert 5 == len(stored_objects)
-        for test_record, stored_object in zip(test_records[-5:], stored_objects):
-            assert stored_object.model_dump() == test_record.model_dump()
+        for created_object, stored_object in zip(created_objects[-5:], stored_objects):
+            assert stored_object is not None
+            assert stored_object.model_dump() == created_object.model_dump()
 
         # Clean-up
         ...

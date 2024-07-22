@@ -1,5 +1,5 @@
 from typing import Any
-from datetime import datetime
+from datetime import datetime, UTC
 from sqlmodel import Field, Relationship, SQLModel
 import uuid
 
@@ -9,8 +9,8 @@ import uuid
 
 class Base(SQLModel):
     id: Any
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default=datetime.now(tz=UTC))
+    updated_at: datetime = Field(default=datetime.now(tz=UTC))
     deleted_at: datetime | None = None
 
 
