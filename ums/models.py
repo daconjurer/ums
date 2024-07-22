@@ -1,5 +1,14 @@
 from typing import Any
-from datetime import datetime, UTC
+import sys
+from datetime import datetime
+
+if sys.version_info > (3, 11):
+    from datetime import UTC
+else:
+    from datetime import timezone
+
+    UTC = timezone.utc
+
 from sqlmodel import Field, Relationship, SQLModel
 import uuid
 

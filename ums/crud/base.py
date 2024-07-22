@@ -6,7 +6,16 @@ from typing import Type, Generic, TypeVar, Any
 from pydantic import BaseModel
 import uuid
 from loguru import logger
-from datetime import datetime, UTC
+from datetime import datetime
+import sys
+from datetime import datetime
+
+if sys.version_info > (3, 11):
+    from datetime import UTC
+else:
+    from datetime import timezone
+
+    UTC = timezone.utc
 
 from fastapi.encoders import jsonable_encoder
 from sqlmodel import Session, select, SQLModel

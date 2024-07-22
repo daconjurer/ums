@@ -2,7 +2,15 @@ from typing import Type, Any
 from sqlmodel import Session
 import uuid
 from enum import Enum
-from datetime import datetime, UTC
+import sys
+from datetime import datetime
+
+if sys.version_info > (3, 11):
+    from datetime import UTC
+else:
+    from datetime import timezone
+
+    UTC = timezone.utc
 
 from ums.crud.base import BaseRepository, CreateSchema, UpdateSchema
 from ums.crud.group.validation import GroupValidator
