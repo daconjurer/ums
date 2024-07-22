@@ -9,6 +9,7 @@ jobs:
   lint-format-type:
     name: Preliminary checks
     runs-on: ubuntu-latest
+    environment: demo
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
