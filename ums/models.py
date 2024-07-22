@@ -1,5 +1,14 @@
 from typing import Any
+import sys
 from datetime import datetime
+
+if sys.version_info > (3, 11):
+    from datetime import UTC
+else:
+    from datetime import timezone
+
+    UTC = timezone.utc
+
 from sqlmodel import Field, Relationship, SQLModel
 import uuid
 
@@ -9,8 +18,8 @@ import uuid
 
 class Base(SQLModel):
     id: Any
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default=datetime.now(tz=UTC))
+    updated_at: datetime = Field(default=datetime.now(tz=UTC))
     deleted_at: datetime | None = None
 
 

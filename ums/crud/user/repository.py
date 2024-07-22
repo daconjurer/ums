@@ -2,7 +2,15 @@ from typing import Type, Any
 from sqlmodel import Session
 import uuid
 from enum import Enum
+import sys
 from datetime import datetime
+
+if sys.version_info > (3, 11):
+    from datetime import UTC
+else:
+    from datetime import timezone
+
+    UTC = timezone.utc
 
 from ums.core.security import get_password_hash
 from ums.crud.base import BaseRepository, CreateSchema, UpdateSchema
@@ -112,7 +120,7 @@ class UserRepository(BaseRepository[User]):
         if validated_user.get("password"):
             validated_user["password"] = get_password_hash(validated_user["password"])
 
-        update_datetime = datetime.utcnow()
+        update_datetime = datetime.now(tz=UTC)
 
         for key, value in validated_user.items():
             setattr(db_obj, key, value)
