@@ -6,7 +6,7 @@ from typing import Type, Generic, TypeVar, Any
 from pydantic import BaseModel
 import uuid
 from loguru import logger
-from datetime import datetime
+from datetime import datetime, UTC
 
 from fastapi.encoders import jsonable_encoder
 from sqlmodel import Session, select, SQLModel
@@ -136,7 +136,7 @@ class BaseRepository(BaseModel, Generic[ModelType]):
         for key, value in update_data.items():
             setattr(db_obj, key, value)
 
-        setattr(db_obj, "updated_at", datetime.utcnow())
+        setattr(db_obj, "updated_at", datetime.now(tz=UTC))
 
         db.add(db_obj)
         db.commit()
@@ -154,7 +154,7 @@ class BaseRepository(BaseModel, Generic[ModelType]):
         if target_object:
             target_object.is_deleted = True
             target_object.is_active = False
-            target_object.deleted_at = datetime.utcnow()
+            target_object.deleted_at = datetime.now(tz=UTC)
             db.add(target_object)
             db.commit()
 
