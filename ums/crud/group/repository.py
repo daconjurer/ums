@@ -2,7 +2,15 @@ from typing import Type, Any
 from sqlmodel import Session
 import uuid
 from enum import Enum
+import sys
 from datetime import datetime
+
+if sys.version_info > (3, 11):
+    from datetime import UTC
+else:
+    from datetime import timezone
+
+    UTC = timezone.utc
 
 from ums.crud.base import BaseRepository, CreateSchema, UpdateSchema
 from ums.crud.group.validation import GroupValidator
@@ -60,7 +68,7 @@ class CrudGroup(BaseRepository[Group]):
 
         Fetches a single Group record with the provided ID.
         """
-        return db.get(self.model, id)  # type: ignore
+        return super().get(db, id)  # type: ignore
 
     def get_by(
         self,
@@ -105,7 +113,7 @@ class CrudGroup(BaseRepository[Group]):
         for key, value in validated_group.items():
             setattr(db_obj, key, value)
 
-        setattr(db_obj, "updated_at", datetime.utcnow())
+        setattr(db_obj, "updated_at", datetime.now(tz=UTC))
 
         db.add(db_obj)
         db.commit()
