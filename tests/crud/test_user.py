@@ -1,26 +1,26 @@
+from datetime import datetime
+from uuid import UUID
+
 import pytest
 
-from uuid import UUID
-from datetime import datetime
+from tests.fixtures import (
+    db,  # noqa F401
+    get_session,
+    initialized_groups,  # noqa F401
+    initialized_permissions,  # noqa F401
+    initialized_roles,  # noqa F401
+    initialized_users,  # noqa F401
+    setup_and_teardown_db,  # noqa F401
+)
+from ums.core.exceptions import (
+    InvalidGroupException,
+    InvalidRoleException,
+    InvalidUserException,
+)
+from ums.core.security import verify_password
 from ums.crud.user.repository import user_repository
 from ums.crud.user.schemas import UserCreate, UserUpdate
 from ums.middlewares.filter_sort import FilterBy, SortBy, SortOptions
-from ums.core.security import verify_password
-from ums.core.exceptions import (
-    InvalidRoleException,
-    InvalidGroupException,
-    InvalidUserException,
-)
-
-from tests.fixtures import (
-    get_session,
-    db,  # noqa F401
-    setup_and_teardown_db,  # noqa F401
-    initialized_permissions,  # noqa F401
-    initialized_roles,  # noqa F401
-    initialized_groups,  # noqa F401
-    initialized_users,  # noqa F401
-)
 
 
 class TestUserRepository:

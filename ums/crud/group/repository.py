@@ -1,9 +1,10 @@
-from typing import Type, Any
-from sqlmodel import Session
-import uuid
-from enum import Enum
 import sys
+import uuid
 from datetime import datetime
+from enum import Enum
+from typing import Any, Type
+
+from sqlmodel import Session
 
 if sys.version_info > (3, 11):
     from datetime import UTC
@@ -12,11 +13,11 @@ else:
 
     UTC = timezone.utc
 
+from ums.core import exceptions
 from ums.crud.base import BaseRepository, CreateSchema, UpdateSchema
 from ums.crud.group.validation import GroupValidator
-from ums.models import Group
-from ums.core import exceptions
 from ums.middlewares.filter_sort import FilterBy, SortBy
+from ums.models import Group
 
 
 class GroupFilterByEnum(str, Enum):

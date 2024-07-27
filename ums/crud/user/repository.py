@@ -1,9 +1,10 @@
-from typing import Type, Any
-from sqlmodel import Session
-import uuid
-from enum import Enum
 import sys
+import uuid
 from datetime import datetime
+from enum import Enum
+from typing import Any, Type
+
+from sqlmodel import Session
 
 if sys.version_info > (3, 11):
     from datetime import UTC
@@ -12,12 +13,12 @@ else:
 
     UTC = timezone.utc
 
+from ums.core import exceptions
 from ums.core.security import get_password_hash
 from ums.crud.base import BaseRepository, CreateSchema, UpdateSchema
 from ums.crud.user.validation import UserValidator
-from ums.models import User
-from ums.core import exceptions
 from ums.middlewares.filter_sort import FilterBy, SortBy
+from ums.models import User
 
 
 class UserFilterByEnum(str, Enum):
@@ -30,7 +31,7 @@ class UserFilterByEnum(str, Enum):
 
 
 class UserSortByEnum(str, Enum):
-    name = "name"
+    full_name = "full_name"
     created_at = "created_at"
     updated_at = "upated_at"
 
@@ -48,7 +49,7 @@ class UserRepository(BaseRepository[User]):
     }
 
     _sort_to_column: dict[str, Any] = {
-        UserSortByEnum.name: model.name,
+        UserSortByEnum.full_name: model.full_name,
         UserSortByEnum.created_at: model.created_at,
         UserSortByEnum.updated_at: model.updated_at,
     }

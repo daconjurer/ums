@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional
-from fastapi import HTTPException, status
 
+from fastapi import HTTPException, status
 
 # HTTP exceptions (meant to stop execution on the spot)
 
@@ -54,7 +54,7 @@ class InvalidFilteringException(UMSException):
         detail: str = "Duplicate values supplied for filtering.",
     ) -> None:
         super().__init__(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=detail,
         )
 

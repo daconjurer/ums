@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
+
+from ums.crud.user.repository import FilterBy, user_repository
 from ums.db.session import get_session
-from ums.crud.user.repository import user_repository, FilterBy
-from pydantic import EmailStr
 
 
 class UserPublic(BaseModel):
