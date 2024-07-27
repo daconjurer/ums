@@ -1,4 +1,5 @@
 import secrets
+
 from ums.core.security import get_password_hash
 
 

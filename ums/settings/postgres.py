@@ -1,4 +1,4 @@
-from pydantic import Field, field_validator, PostgresDsn, ValidationInfo
+from pydantic import Field, PostgresDsn, ValidationInfo, field_validator
 
 from ums.settings.base import CommonSettings
 

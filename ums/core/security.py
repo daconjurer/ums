@@ -1,10 +1,9 @@
 from datetime import datetime, timedelta
 
-from jose import jwt
 import bcrypt
+from jose import jwt
 
 from ums.settings.application import get_app_settings
-
 
 security_settings = get_app_settings().security
 

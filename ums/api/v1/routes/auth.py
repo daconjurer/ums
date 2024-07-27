@@ -1,21 +1,16 @@
-from pydantic import BaseModel
-from fastapi import APIRouter
-
-from loguru import logger
-
-from fastapi import Depends, HTTPException
-from fastapi.security import OAuth2PasswordRequestForm
-
 from datetime import timedelta
 
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
+from loguru import logger
+from pydantic import BaseModel
+
+from ums.api.v1.controllers import permissions as permissions_controller
+from ums.api.v1.controllers import user as user_controller
+from ums.api.v1.controllers.auth import authenticate_user
 from ums.core.exceptions import AuthenticationException
 from ums.core.security import create_access_token
-from ums.api.v1.controllers.auth import authenticate_user
-from ums.api.v1.controllers import user as user_controller
-from ums.api.v1.controllers import permissions as permissions_controller
-
 from ums.settings.application import get_app_settings
-
 
 security_settings = get_app_settings().security
 

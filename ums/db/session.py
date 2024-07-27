@@ -1,5 +1,5 @@
-from sqlmodel import create_engine, Session
 from sqlalchemy.orm import close_all_sessions
+from sqlmodel import Session, create_engine
 
 from ums.models import Base
 from ums.settings.application import get_app_settings
