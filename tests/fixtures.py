@@ -1,9 +1,12 @@
-import pytest
-
 from uuid import UUID
-from ums.models import User, Group, Role, Permissions
-from ums.db.session import get_session, setup_db, drop_db
+
+import pytest
+from fastapi.testclient import TestClient
+
+from ums.core.app_factory import create_app
 from ums.core.security import get_password_hash
+from ums.db.session import drop_db, get_session, setup_db
+from ums.models import Group, Permissions, Role, User
 
 
 @pytest.fixture(autouse=True)
@@ -192,3 +195,32 @@ def initialized_maintainer(db, initialized_groups, initialized_roles):
     db.refresh(current_user)
 
     yield current_user, maintainer_role
+
+
+@pytest.fixture
+def initialized_engineer(db, initialized_groups, initialized_roles):
+    group_alpha, _, _ = initialized_groups
+    _, _, engineer_role = initialized_roles
+
+    current_user = User(
+        id=UUID("8ada3a8b-67d4-4522-bb8f-67da31a7d629"),
+        name="TheEngineer",
+        full_name="The Engineer",
+        email="the.engineer@rfs-example.com",
+        password=get_password_hash("engineerspassword1"),
+        groups=[group_alpha],
+        role_id=engineer_role.id,
+    )
+    db.add(current_user)
+    db.commit()
+    db.refresh(current_user)
+
+    yield current_user, engineer_role
+
+
+# Route testing
+
+
+@pytest.fixture
+def client() -> TestClient:
+    return TestClient(app=create_app())

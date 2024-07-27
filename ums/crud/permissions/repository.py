@@ -1,6 +1,7 @@
-from typing import Type, Sequence
+from typing import Sequence, Type
+
 from pydantic import BaseModel
-from sqlmodel import and_, Session, select
+from sqlmodel import Session, and_, select
 
 from ums.crud.base import BaseRepository, CreateSchema, UpdateSchema
 from ums.models import Permissions, RolePermissionLink

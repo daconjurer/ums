@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends
 from typing import Annotated
+
+from fastapi import APIRouter, Depends
 
 from ums.api.v1.controllers.auth import get_current_user
 from ums.models import User

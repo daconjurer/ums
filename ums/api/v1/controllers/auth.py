@@ -1,20 +1,16 @@
+from typing import Annotated
+
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, SecurityScopes
+from jose import JWTError, jwt
 from loguru import logger
 from pydantic import BaseModel, ValidationError
-from fastapi.security import SecurityScopes
-from typing import Annotated
-from fastapi import Depends, HTTPException, status
 
 from ums.api.v1.controllers import user as user_controller
-
 from ums.core import exceptions
 from ums.core.security import verify_password
 from ums.models import User
-
-from jose import JWTError, jwt
-
-from fastapi.security import OAuth2PasswordBearer
 from ums.settings.application import get_app_settings
-
 
 security_settings = get_app_settings().security
 

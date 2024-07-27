@@ -1,10 +1,11 @@
-from pydantic import Field
 from functools import lru_cache
 
-from ums.settings.base import CommonSettings
+from pydantic import Field
+
 from ums.settings.api import APISettings
-from ums.settings.security import SecuritySettings
+from ums.settings.base import CommonSettings
 from ums.settings.postgres import PostgresSettings
+from ums.settings.security import SecuritySettings
 
 
 class AppSettings(CommonSettings):

@@ -1,6 +1,8 @@
-from typing import Sequence
-from pydantic import EmailStr
 import uuid
+from typing import Sequence
+
+from pydantic import EmailStr
+
 from ums.crud.base import CreateSchema, UpdateSchema
 
 

@@ -1,5 +1,6 @@
-from typing import Sequence
 import uuid
+from typing import Sequence
+
 from ums.crud.base import CreateSchema, UpdateSchema
 
 

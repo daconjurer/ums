@@ -1,8 +1,8 @@
 from uuid import UUID
-from ums.models import Group, Role, User, Permissions
-from ums.core.security import get_password_hash
-from ums.db.session import get_session
 
+from ums.core.security import get_password_hash
+from ums.db.session import drop_db, get_session, setup_db
+from ums.models import Group, Permissions, Role, User
 
 users_permission = Permissions(
     id=UUID("c0d6a4f1-bb1d-471f-ac5f-06c2691c0390"),
@@ -23,12 +23,12 @@ items_permission = Permissions(
 group_alpha = Group(
     id=UUID("d2ae3068-f5c3-4ab8-a1fd-912828963749"),
     name="Alpha",
-    location="Mexico City"
+    location="Mexico City",
 )
 group_delta = Group(
     id=UUID("190212f3-35fe-48d2-a3bc-320eee2f0d52"),
     name="Delta",
-    location="Quito"
+    location="Quito",
 )
 
 role_admin = Role(
@@ -143,6 +143,9 @@ user_10 = User(
 
 
 def init_db():
+    drop_db()
+    setup_db()
+
     db = next(get_session())
 
     db.add_all([users_permission, me_permission, items_permission])

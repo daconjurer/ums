@@ -1,4 +1,3 @@
-from typing import Any
 import sys
 from datetime import datetime
 
@@ -9,15 +8,15 @@ else:
 
     UTC = timezone.utc
 
-from sqlmodel import Field, Relationship, SQLModel
 import uuid
 
+from sqlmodel import Field, Relationship, SQLModel
 
 # Base data model
 
 
 class Base(SQLModel):
-    id: Any
+    id: uuid.UUID
     created_at: datetime = Field(default=datetime.now(tz=UTC))
     updated_at: datetime = Field(default=datetime.now(tz=UTC))
     deleted_at: datetime | None = None
@@ -32,6 +31,7 @@ class UserGroupLink(Base, table=True):
     id: uuid.UUID = Field(
         default_factory=uuid.uuid4,
         primary_key=True,
+        nullable=False,
     )
     group_id: uuid.UUID | None = Field(
         foreign_key="groups.id", primary_key=True, nullable=True
@@ -47,6 +47,7 @@ class RolePermissionLink(Base, table=True):
     id: uuid.UUID = Field(
         default_factory=uuid.uuid4,
         primary_key=True,
+        nullable=False,
     )
     permission_id: uuid.UUID | None = Field(
         default=None, foreign_key="permissions.id", primary_key=True
@@ -65,6 +66,7 @@ class Group(Base, table=True):
     id: uuid.UUID = Field(
         default_factory=uuid.uuid4,
         primary_key=True,
+        nullable=False,
     )
     name: str = Field(index=True)
     location: str
@@ -83,6 +85,7 @@ class Role(Base, table=True):
     id: uuid.UUID = Field(
         default_factory=uuid.uuid4,
         primary_key=True,
+        nullable=False,
     )
     name: str = Field(nullable=False, index=True)
     description: str | None = None
@@ -100,6 +103,7 @@ class Permissions(Base, table=True):
     id: uuid.UUID = Field(
         default_factory=uuid.uuid4,
         primary_key=True,
+        nullable=False,
     )
     name: str = Field(nullable=False, index=True)
     description: str | None = None

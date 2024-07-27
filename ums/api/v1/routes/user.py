@@ -1,14 +1,13 @@
-from fastapi import APIRouter, Depends, Security, Query
-
 from typing import Annotated
 
-from ums.models import User
-from ums.api.v1.controllers.auth import get_current_active_user
-from ums.crud.user.repository import user_repository, UserSortByEnum, UserFilterByEnum
-from ums.middlewares.filter_sort import SortBy, FilterBy, parse_sort, parse_filter
-from ums.db.session import get_session
-from ums.api.v1.controllers import user
+from fastapi import APIRouter, Depends, Query, Security
 
+from ums.api.v1.controllers import user
+from ums.api.v1.controllers.auth import get_current_active_user
+from ums.crud.user.repository import UserFilterByEnum, UserSortByEnum, user_repository
+from ums.db.session import get_session
+from ums.middlewares.filter_sort import FilterBy, SortBy, parse_filter, parse_sort
+from ums.models import User
 
 router = APIRouter(tags=["user"])
 

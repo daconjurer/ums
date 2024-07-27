@@ -1,6 +1,8 @@
 from enum import Enum
-from pydantic import BaseModel
+
 from fastapi import Query
+from pydantic import BaseModel
+
 from ums.core.exceptions import InvalidFilteringException
 
 
@@ -46,7 +48,7 @@ class FilterBy(BaseModel):
 
 def parse_sort(options: list[str]):
     async def _parse_sort(
-        sort: str | None = Query(None, pattern=SortBy.create(options)),
+        sort: str | None = Query(default=None, pattern=SortBy.create(options)),
     ):
         if sort:
             return SortBy.parse(sort)
@@ -55,7 +57,7 @@ def parse_sort(options: list[str]):
 
 
 def parse_filter(options: list[str]):
-    async def _parse_filter(filter: list[str] = Query(None)):
+    async def _parse_filter(filter: list[str] = Query(default=None)):
         if not isinstance(filter, list):
             return []
 

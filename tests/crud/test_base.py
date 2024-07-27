@@ -1,13 +1,12 @@
-import pytest
-
 import uuid
+
+import pytest
 from sqlmodel import Field
 
-from ums.crud.base import BaseRepository, UpdateSchema, CreateSchema
-from ums.models import Base
-
-from ums.core.exceptions import UMSException
 from tests.fixtures import get_session, setup_and_teardown_db  # noqa F401
+from ums.core.exceptions import UMSException
+from ums.crud.base import BaseRepository, CreateSchema, UpdateSchema
+from ums.models import Base
 
 
 class DummyModel(Base, table=True):
