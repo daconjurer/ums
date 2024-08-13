@@ -218,6 +218,71 @@ def initialized_engineer(db, initialized_groups, initialized_roles):
     yield current_user, engineer_role
 
 
+@pytest.fixture
+def initialized_engineer_credentials(db, initialized_groups, initialized_roles):
+    group_alpha, _, _ = initialized_groups
+    _, _, engineer_role = initialized_roles
+
+    username = "TheEngineerAndCredentials"
+    password = "engineerspassword1"
+
+    current_user = User(
+        id=UUID("c8ee39f7-2213-4118-b0a6-2f8c0e882239"),
+        name=username,
+        full_name="Engineer Credentials",
+        email="engineer.credentials@rfs-example.com",
+        password=get_password_hash(password),
+        groups=[group_alpha],
+        role_id=engineer_role.id,
+    )
+    db.add(current_user)
+    db.commit()
+    db.refresh(current_user)
+
+    yield username, password
+
+
+@pytest.fixture
+def initialized_role_with_no_permissions(db):
+    role_no_permissions = Role(
+        id=UUID("f1e3e5d7-0c1d-4d9b-bf6b-1b3a1c3b7e9b"),
+        name="NoPermissions",
+        description="Role with no permissions",
+    )
+
+    db.add(role_no_permissions)
+    db.commit()
+    db.refresh(role_no_permissions)
+
+    yield role_no_permissions
+
+
+@pytest.fixture
+def initialized_user_with_no_scopes(
+    db,
+    initialized_groups,
+):
+    group_alpha, _, _ = initialized_groups
+
+    username = "TheEngineerAndCredentialsButNoScopes"
+    password = "engineerspassword1"
+
+    current_user = User(
+        id=UUID("c8ee39f7-2213-4118-b0a6-2f8c0e882239"),
+        name=username,
+        full_name="Engineer Credentials",
+        email="engineer.credentials@rfs-example.com",
+        password=get_password_hash(password),
+        groups=[group_alpha],
+        role_id=None,
+    )
+    db.add(current_user)
+    db.commit()
+    db.refresh(current_user)
+
+    yield username, password
+
+
 # Route testing
 
 

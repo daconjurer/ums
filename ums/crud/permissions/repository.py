@@ -1,4 +1,5 @@
 from typing import Sequence, Type
+from uuid import UUID
 
 from pydantic import BaseModel
 from sqlmodel import Session, and_, select
@@ -26,7 +27,7 @@ class PermissionsPublic(BaseModel):
 class PermissionsRepository(BaseRepository):
     model: Type[Permissions] = Permissions
 
-    def get_by_role_id(self, db: Session, role_id: str) -> Sequence[Permissions]:
+    def get_by_role_id(self, db: Session, role_id: UUID) -> Sequence[Permissions]:
         """Get permissions by role."""
 
         statement = (
@@ -34,7 +35,7 @@ class PermissionsRepository(BaseRepository):
                 RolePermissionLink,
                 and_(
                     Permissions.id == RolePermissionLink.permission_id,
-                    RolePermissionLink.role_id == role_id,
+                    RolePermissionLink.role_id == str(role_id),
                 ),
             )
             # Equivalent (but typed) to:

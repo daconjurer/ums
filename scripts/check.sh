@@ -1,6 +1,7 @@
 #! /bin/bash
 
-echo "ruff check --diff ums/"
+echo "ruff check --diff ums/ tests/ db/ && ruff check --select I --diff ums/ tests/ db/"
+ruff check --diff ums/ tests/ db/
 ruff check --select I --diff ums/ tests/ db/
 if [ $? -ne 0 ]; then
     echo "Error: ruff check failed"
