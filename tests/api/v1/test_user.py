@@ -1,13 +1,10 @@
 from datetime import timedelta
-from uuid import UUID
 
-import pytest
 from fastapi.testclient import TestClient
 
 from tests.fixtures import (
     client,  # noqa F401
     db,  # noqa F401
-    get_session,
     initialized_admin,  # noqa F401
     initialized_groups,  # noqa F401
     initialized_maintainer,  # noqa F401
@@ -25,7 +22,7 @@ class TestUserRoute:
 
     def test_read_users_without_authorization(
         self,
-        client: TestClient,
+        client: TestClient,  # noqa F811
     ):
         # setup
         ...
@@ -38,9 +35,9 @@ class TestUserRoute:
 
     def test_read_users_with_authorization(
         self,
-        client: TestClient,
-        initialized_users,
-        initialized_admin,
+        client: TestClient,  # noqa F811
+        initialized_users,  # noqa F811
+        initialized_admin,  # noqa F811
     ):
         # setup
         current_user, current_user_role = initialized_admin
@@ -76,9 +73,9 @@ class TestUserRoute:
 
     def test_read_users_with_filtering(
         self,
-        client: TestClient,
-        initialized_users,
-        initialized_admin,
+        client: TestClient,  # noqa F811
+        initialized_users,  # noqa F811
+        initialized_admin,  # noqa F811
     ):
         # setup
         current_user, current_user_role = initialized_admin
@@ -108,9 +105,9 @@ class TestUserRoute:
 
     def test_read_users_with_invalid_filtering(
         self,
-        client: TestClient,
-        initialized_users,
-        initialized_admin,
+        client: TestClient,  # noqa F811
+        initialized_users,  # noqa F811
+        initialized_admin,  # noqa F811
     ):
         # setup
         current_user, current_user_role = initialized_admin
@@ -137,8 +134,8 @@ class TestUserRoute:
 
     def test_read_users_with_sorting(
         self,
-        client: TestClient,
-        initialized_admin,
+        client: TestClient,  # noqa F811
+        initialized_admin,  # noqa F811
     ):
         # setup
         current_user, current_user_role = initialized_admin
@@ -180,9 +177,9 @@ class TestUserRoute:
 
     def test_read_users_with_limit_and_pagination(
         self,
-        client: TestClient,
-        initialized_users,
-        initialized_admin,
+        client: TestClient,  # noqa F811
+        initialized_users,  # noqa F811
+        initialized_admin,  # noqa F811
     ):
         # setup
         current_user, current_user_role = initialized_admin
@@ -220,8 +217,8 @@ class TestUserRoute:
 
     def test_read_own_details_without_authorization(
         self,
-        client: TestClient,
-        initialized_users,
+        client: TestClient,  # noqa F811
+        initialized_users,  # noqa F811
     ):
         # setup
         ...
@@ -234,8 +231,8 @@ class TestUserRoute:
 
     def test_read_own_details_with_authorization(
         self,
-        client: TestClient,
-        initialized_maintainer,
+        client: TestClient,  # noqa F811
+        initialized_maintainer,  # noqa F811
     ):
         # setup
         current_user, current_user_role = initialized_maintainer

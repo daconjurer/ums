@@ -1,12 +1,11 @@
 from datetime import timedelta
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from loguru import logger
 from pydantic import BaseModel
 
 from ums.api.v1.controllers import permissions as permissions_controller
-from ums.api.v1.controllers import user as user_controller
 from ums.api.v1.controllers.auth import authenticate_user
 from ums.core.exceptions import AuthenticationException
 from ums.core.security import create_access_token
@@ -31,7 +30,7 @@ async def login_for_access_token(
     except AuthenticationException as e:
         logger.warning(f"Authentication failed: {e}")
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Incorrect name or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
@@ -41,17 +40,16 @@ async def login_for_access_token(
     )
 
     # Check the role of the user
-    user_role_id = user_controller.get_user_role_id(user.name)
-    if not user_role_id:
+    if not user.role_id:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="User has no role assigned.",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
     # Get the permissions for that role
     user_permissions = permissions_controller.get_permissions_by_role_id(
-        role_id=user_role_id
+        role_id=user.role_id
     )
 
     user_scopes = [user_permission.name for user_permission in user_permissions]
