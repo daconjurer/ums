@@ -4,3 +4,4 @@ db/dev/
 TODO.md
 .vscode/
 .coverage
+.DS_Store/
