@@ -13,7 +13,7 @@ from tests.fixtures import (
 )
 
 
-class TestUserRoute:
+class TestLoginRoute:
     def setup_method(self):
         self.url = "/login"
 

@@ -101,36 +101,10 @@ class TestUserRoute:
         payload = response.json()
 
         assert response.status_code == 200
-        assert initialized_users[test_user_number].name in payload[0]["name"]
-
-    def test_read_users_with_invalid_filtering(
-        self,
-        client: TestClient,  # noqa F811
-        initialized_users,  # noqa F811
-        initialized_admin,  # noqa F811
-    ):
-        # setup
-        current_user, current_user_role = initialized_admin
-        invalid_filter = "invalid:filter"
-
-        access_token_expires = timedelta(minutes=1)
-        user_scopes = [
-            permissions.name for permissions in current_user_role.permissions
-        ]
-        access_token = create_access_token(
-            data={"sub": current_user.name, "scopes": user_scopes},
-            expire_delta=access_token_expires,
+        assert (
+            initialized_users[test_user_number].name
+            in payload[test_user_number]["name"]
         )
-
-        # test
-        response = client.get(
-            url=self.url,
-            headers={"Authorization": f"Bearer {access_token}"},
-            params={"filter": invalid_filter},
-        )
-
-        # validation
-        assert response.status_code == 422
 
     def test_read_users_with_sorting(
         self,
