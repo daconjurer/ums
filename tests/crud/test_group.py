@@ -12,9 +12,9 @@ from tests.fixtures import (
     setup_and_teardown_db,  # noqa F401
 )
 from ums.core.exceptions import InvalidGroupException, InvalidUserException
-from ums.crud.group.repository import group_repository
+from ums.crud.base import SortParams
+from ums.crud.group.repository import GroupFilterParams, group_repository
 from ums.crud.group.schemas import GroupCreate, GroupUpdate
-from ums.middlewares.filter_sort import FilterBy, SortBy, SortOptions
 
 
 class TestGroupRepository:
@@ -97,7 +97,7 @@ class TestGroupRepository:
         # Test
         stored_object = self.test_group_repository.get_by(
             db=self.test_db,
-            filter=FilterBy(key="name", value=created_group.name),
+            filter=GroupFilterParams(name=created_group.name),
         )
 
         # Validation
@@ -114,7 +114,7 @@ class TestGroupRepository:
         # Test
         stored_object = self.test_group_repository.get_by(
             db=self.test_db,
-            filter=FilterBy(key="title", value="Mr"),
+            filter=GroupFilterParams(title="Mr"),
         )
 
         # Validation
@@ -130,11 +130,11 @@ class TestGroupRepository:
         # Test
         stored_objects = self.test_group_repository.get_many(
             db=self.test_db,
-            filter=[
-                FilterBy(key="location", value="Glasgow"),
-                FilterBy(key="is_active", value="true"),
-            ],
-            sort=SortBy(key="created_at", by=SortOptions.asc),
+            filter=GroupFilterParams(
+                location="Glasgow",
+                is_active="true",
+            ),
+            sort=SortParams(sort_by="created_at", sort_order="asc"),
         )
 
         # Validation
