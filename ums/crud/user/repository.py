@@ -1,9 +1,10 @@
 import sys
 import uuid
 from datetime import datetime
-from enum import Enum
-from typing import Any, Type
+from typing import Type
 
+from fastapi import Query
+from pydantic import Field
 from sqlmodel import Session
 
 if sys.version_info > (3, 11):
@@ -15,44 +16,49 @@ else:
 
 from ums.core import exceptions
 from ums.core.security import get_password_hash
-from ums.crud.base import BaseRepository, CreateSchema, UpdateSchema
+from ums.crud.base import (
+    BaseFilterParams,
+    BaseRepository,
+    CreateSchema,
+    SortParams,
+    UpdateSchema,
+)
 from ums.crud.user.validation import UserValidator
-from ums.middlewares.filter_sort import FilterBy, SortBy
+from ums.middlewares.filter_sort import SortOptions
 from ums.models import User
 
 
-class UserFilterByEnum(str, Enum):
-    name = "name"
-    full_name = "full_name"
-    email = "email"
-    is_active = "is_active"
-    is_verified = "is_verified"
-    is_deleted = "is_deleted"
+class UserFilterParams(BaseFilterParams):
+    name: str | None = Field(
+        Query(default=None, examples=[""], description="Name of the user"),
+    )
+    full_name: str | None = Field(
+        Query(default=None, examples=[""], description="Full name of the user"),
+    )
+    email: str | None = Field(
+        Query(default=None, examples=[""], description="Email of the user"),
+    )
+    is_active: bool | None = Field(
+        Query(default=None, examples=None, description="Whether the user is active"),
+    )
+    is_verified: bool | None = Field(
+        Query(default=None, examples=None, description="Whether the user is verified"),
+    )
 
 
-class UserSortByEnum(str, Enum):
+# UserSortOptions = Literal["full_name", "created_at", "updated_at"]
+class UserSortOptions(SortOptions):
     full_name = "full_name"
     created_at = "created_at"
-    updated_at = "upated_at"
+    updated_at = "updated_at"
 
 
 class UserRepository(BaseRepository[User]):
     model: Type[User] = User
-
-    _filter_to_column: dict[str, Any] = {
-        UserFilterByEnum.name: model.name,
-        UserFilterByEnum.full_name: model.full_name,
-        UserFilterByEnum.email: model.email,
-        UserFilterByEnum.is_deleted: model.is_deleted,
-        UserFilterByEnum.is_active: model.is_active,
-        UserFilterByEnum.is_verified: model.is_verified,
-    }
-
-    _sort_to_column: dict[str, Any] = {
-        UserSortByEnum.full_name: model.full_name,
-        UserSortByEnum.created_at: model.created_at,
-        UserSortByEnum.updated_at: model.updated_at,
-    }
+    filter_params: Type[UserFilterParams] = UserFilterParams
+    sort_options: tuple[str, ...] | None = tuple(
+        member.value for member in UserSortOptions
+    )
 
     def add(self, db: Session, input_object: CreateSchema) -> User:
         """Create operation.
@@ -80,7 +86,7 @@ class UserRepository(BaseRepository[User]):
     def get_by(
         self,
         db: Session,
-        filter: FilterBy,
+        filter: BaseFilterParams,
     ) -> User | None:
         """Read operation.
 
@@ -91,8 +97,8 @@ class UserRepository(BaseRepository[User]):
     def get_many(  # type: ignore[override]
         self,
         db: Session,
-        filter: list[FilterBy] | None = None,
-        sort: SortBy | None = None,
+        filter: BaseFilterParams | None = None,
+        sort: SortParams | None = None,
         limit: int | None = None,
         page: int | None = None,
     ) -> list[User]:  # type: ignore

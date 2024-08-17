@@ -21,7 +21,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlmodel import Session, SQLModel, select
 
 from ums.core.exceptions import UMSException
-from ums.middlewares.filter_sort import FilterBy, SortBy, SortOptions
+from ums.middlewares.filter_sort import BaseFilterParams, SortParams
 from ums.models import Base
 
 ModelType = TypeVar("ModelType", bound=Base)
@@ -36,11 +36,26 @@ class UpdateSchema(SQLModel):
 
 
 class BaseRepository(BaseModel, Generic[ModelType]):
-    """CRUD object with default methods."""
+    """CRUD repository with default methods."""
 
     model: Type[ModelType]
-    _filter_to_column: dict[str, Any] = {}
-    _sort_to_column: dict[str, Any] = {}
+    filter_params: Type[BaseFilterParams] | None = None
+    sort_options: tuple[str, ...] | None = None
+
+    @property
+    def filter_params_dict(self) -> dict[str, Any]:
+        if not self.filter_params:
+            return {}
+        return {
+            attr: getattr(self.model, attr)
+            for attr in self.filter_params.model_fields.keys()
+        }
+
+    @property
+    def sort_params_dict(self) -> dict[str, Any]:
+        if not self.sort_options:
+            return {}
+        return {attr: getattr(self.model, attr) for attr in self.sort_options}
 
     def add(
         self,
@@ -70,23 +85,32 @@ class BaseRepository(BaseModel, Generic[ModelType]):
     def get_by(
         self,
         db: Session,
-        filter: FilterBy,
+        filter: BaseFilterParams,
     ) -> Base | None:
         """Read operation.
 
         Fetches a record by a filter key-value pair.
         """
-        filter_field = self._filter_to_column.get(filter.key, None)
-        if filter_field:
-            statement = select(self.model).where(filter_field == filter.value)
-            return db.scalar(statement)
+        filters = filter.get_filters()
+
+        if len(filters) > 1:
+            raise UMSException(
+                status_code=400,
+                detail="Only one filter is allowed for this operation.",
+            )
+
+        for key, value in filters.items():
+            filter_field = self.filter_params_dict.get(key)
+            if filter_field:
+                statement = select(self.model).where(filter_field == value)
+                return db.scalar(statement)
         return None
 
     def get_many(
         self,
         db: Session,
-        filter: list[FilterBy] | None = None,
-        sort: SortBy | None = None,
+        filter: BaseFilterParams | None = None,
+        sort: SortParams | None = None,
         limit: int | None = None,
         page: int | None = None,
     ) -> list[Base]:
@@ -97,23 +121,22 @@ class BaseRepository(BaseModel, Generic[ModelType]):
         """
         statement = select(self.model)
 
-        # Apply filtering
-        if filter:
-            for f in filter:
-                filter_field = self._filter_to_column.get(f.key, None)
+        if filter and self.filter_params:
+            filters = filter.get_filters()
+            for key, value in filters.items():
+                filter_field = self.filter_params_dict.get(key)
                 if filter_field:
-                    statement = statement.where(filter_field == f.value)
+                    statement = statement.where(filter_field == value)
 
         # Apply sorting
-        if sort:
-            if sort.by:
-                column_to_sort = self._sort_to_column.get(sort.key, None)
-                if column_to_sort:
-                    statement = statement.order_by(
-                        column_to_sort.asc()
-                        if sort.by == SortOptions.asc
-                        else column_to_sort.desc()
-                    )
+        if sort and self.sort_options:
+            column_to_sort = self.sort_params_dict.get(sort.sort_by, None)
+            if column_to_sort:
+                statement = statement.order_by(
+                    column_to_sort.asc()
+                    if sort.sort_order == "asc"
+                    else column_to_sort.desc()
+                )
 
         # Apply pagination
         if page is not None and limit is not None:
