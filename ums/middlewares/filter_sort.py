@@ -1,72 +1,63 @@
 from enum import Enum
+from typing import Any, Callable, Literal, Type, TypeAlias, get_args
 
 from fastapi import Query
 from pydantic import BaseModel
 
-from ums.core.exceptions import InvalidFilteringException
+# Filtering
+
+
+class BaseFilterParams(BaseModel):
+    """
+    Base class for filter parameters (this is the parameters container to be
+    used in the query).
+
+    When subclassing, define the filter parameters as fields.
+    """
+
+    def get_filters(self) -> dict[str, Any]:
+        return self.model_dump(exclude_none=True, exclude_unset=True)
+
+
+# Sorting
+
+SortOrder = Literal["asc", "desc"]
+
+
+class SortParams(BaseModel):
+    """
+    Container class for the sorting parameters. To be populated with the
+    `sort_by` and `sort_order` queries.
+    """
+
+    sort_by: str
+    sort_order: SortOrder
 
 
 class SortOptions(str, Enum):
-    """Available sorting options."""
+    """When subclassing, define the available sorting options."""
 
-    asc = "asc"
-    desc = "desc"
-
-
-class SortBy(BaseModel):
-    key: str
-    by: SortOptions | None = None
-
-    @staticmethod
-    def create(keys: list[str]) -> str:
-        # allow sorting by a given key: option or no sorting
-        allowed_options = "|".join(opt.value for opt in SortOptions)
-        allowed_patterns = "|".join(f"{key}:({allowed_options})" for key in keys)
-        return f"^({allowed_patterns})$"
-
-    @staticmethod
-    def parse(value: str) -> "SortBy":
-        by = None
-        vals = value.split(":", 1)
-        if SortOptions.asc == vals[1]:
-            by = SortOptions.asc
-        elif SortOptions.desc == vals[1]:
-            by = SortOptions.desc
-
-        return SortBy(key=vals[0], by=by)
+    ...
 
 
-class FilterBy(BaseModel):
-    key: str
-    value: str | bool
+def parse_sorting(options: Type[SortOptions]) -> Callable:
+    OptionsAlias: TypeAlias = options  # type: ignore[valid-type]
 
-    @staticmethod
-    def parse(value: str) -> "FilterBy":
-        vals = value.split(":", 1)
-        return FilterBy(key=vals[0], value=vals[1] or "")
-
-
-def parse_sort(options: list[str]):
     async def _parse_sort(
-        sort: str | None = Query(default=None, pattern=SortBy.create(options)),
+        sort_by: OptionsAlias | None = Query(
+            default=None,
+            examples=None,
+            description=f"A key to sort by. Options: {', '.join(options)}",
+        ),
+        sort_order: SortOrder | None = Query(
+            default=None,
+            description=f"Options: {', '.join(list(get_args(SortOrder)))}",
+        ),
     ):
-        if sort:
-            return SortBy.parse(sort)
+        if sort_by:
+            return SortParams(
+                sort_by=sort_by,
+                sort_order=sort_order,
+            )
 
     return _parse_sort
-
-
-def parse_filter(options: list[str]):
-    async def _parse_filter(filter: list[str] = Query(default=None)):
-        if not isinstance(filter, list):
-            return []
-
-        for f in filter:
-            if not any(f.startswith(opt + ":") for opt in options):
-                raise InvalidFilteringException(detail=f"Invalid filter format: {f}")
-
-        resp = [FilterBy.parse(f) for f in filter]
-
-        return resp
-
-    return _parse_filter

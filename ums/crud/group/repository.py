@@ -1,9 +1,10 @@
 import sys
 import uuid
 from datetime import datetime
-from enum import Enum
-from typing import Any, Type
+from typing import Type
 
+from fastapi import Query
+from pydantic import Field
 from sqlmodel import Session
 
 if sys.version_info > (3, 11):
@@ -14,42 +15,38 @@ else:
     UTC = timezone.utc
 
 from ums.core import exceptions
-from ums.crud.base import BaseRepository, CreateSchema, UpdateSchema
+from ums.crud.base import (
+    BaseFilterParams,
+    BaseRepository,
+    CreateSchema,
+    SortParams,
+    UpdateSchema,
+)
 from ums.crud.group.validation import GroupValidator
-from ums.middlewares.filter_sort import FilterBy, SortBy
 from ums.models import Group
 
 
-class GroupFilterByEnum(str, Enum):
-    name = "name"
-    location = "location"
-    description = "description"
-    is_active = "is_active"
-    is_deleted = "is_deleted"
-
-
-class GroupSortByEnum(str, Enum):
-    name = "name"
-    created_at = "created_at"
-    updated_at = "upated_at"
+class GroupFilterParams(BaseFilterParams):
+    name: str | None = Field(
+        Query(default=None, examples=[""], description="Name of the group")
+    )
+    location: str | None = Field(
+        Query(default=None, examples=[""], description="Location of the group")
+    )
+    description: str | None = Field(
+        Query(default=None, examples=[""], description="Description of the group")
+    )
+    is_active: bool | None = Field(
+        Query(default=None, examples=None, description="Whether the group is active")
+    )
+    is_deleted: bool | None = Field(
+        Query(default=None, examples=None, description="Whether the group is deleted")
+    )
 
 
 class CrudGroup(BaseRepository[Group]):
     model: Type[Group] = Group
-
-    _filter_to_column: dict[str, Any] = {
-        GroupFilterByEnum.name: model.name,
-        GroupFilterByEnum.location: model.location,
-        GroupFilterByEnum.description: model.description,
-        GroupFilterByEnum.is_deleted: model.is_deleted,
-        GroupFilterByEnum.is_active: model.is_active,
-    }
-
-    _sort_to_column: dict[str, Any] = {
-        GroupSortByEnum.name: model.name,
-        GroupSortByEnum.created_at: model.created_at,
-        GroupSortByEnum.updated_at: model.updated_at,
-    }
+    filter_params: Type[GroupFilterParams] = GroupFilterParams
 
     def add(self, db: Session, input_object: CreateSchema) -> Group:
         """Create operation.
@@ -74,7 +71,7 @@ class CrudGroup(BaseRepository[Group]):
     def get_by(
         self,
         db: Session,
-        filter: FilterBy,
+        filter: BaseFilterParams,
     ) -> Group | None:
         """Read operation.
 
@@ -85,8 +82,8 @@ class CrudGroup(BaseRepository[Group]):
     def get_many(  # type: ignore[override]
         self,
         db: Session,
-        filter: list[FilterBy] | None = None,
-        sort: SortBy | None = None,
+        filter: BaseFilterParams | None = None,
+        sort: SortParams | None = None,
         limit: int | None = None,
         page: int | None = None,
     ) -> list[Group]:
