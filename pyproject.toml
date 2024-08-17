@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ums"
-version = "0.2.0"
+version = "0.3.0"
 description = "A general purpose user management system (UMS)"
 authors = ["Victor Sandoval <vs.software.eng@gmail.com>"]
 
