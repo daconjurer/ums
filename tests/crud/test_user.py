@@ -18,9 +18,9 @@ from ums.core.exceptions import (
     InvalidUserException,
 )
 from ums.core.security import verify_password
-from ums.crud.user.repository import user_repository
+from ums.crud.base import SortParams
+from ums.crud.user.repository import UserFilterParams, user_repository
 from ums.crud.user.schemas import UserCreate, UserUpdate
-from ums.middlewares.filter_sort import FilterBy, SortBy, SortOptions
 
 
 class TestUserRepository:
@@ -199,7 +199,7 @@ class TestUserRepository:
         # Test
         stored_object = user_repository.get_by(
             db=self.test_db,
-            filter=FilterBy(key="name", value=test_add_user_1.name),
+            filter=UserFilterParams(name=test_add_user_1.name),
         )
 
         # Validation
@@ -224,7 +224,7 @@ class TestUserRepository:
         # Test
         stored_object = user_repository.get_by(
             db=self.test_db,
-            filter=FilterBy(key="email", value=test_add_user_1.email),
+            filter=UserFilterParams(email=test_add_user_1.email),
         )
 
         # Validation
@@ -234,46 +234,45 @@ class TestUserRepository:
         # Clean-up
         ...
 
-    def test_get_by_nonexistent_field(self):
-        # Setup
-        test_add_user_1 = UserCreate(
-            name="vic",
-            full_name="Victor Sandoval",
-            email="victor.sandoval@rfs-example.com",
-            password="abcdefg",
-        )
-        _ = user_repository.add(db=self.test_db, input_object=test_add_user_1)
-
-        # Test
-        stored_object = user_repository.get_by(
-            db=self.test_db,
-            filter=FilterBy(key="title", value="Mr"),
-        )
-
-        # Validation
-        assert stored_object is None
-
-        # Clean-up
-        ...
-
-    def test_get_many_with_filtering_and_sorting(self, initialized_users):  # noqa F811
+    def test_get_many_with_several_filters(self, initialized_users):  # noqa F811
         # Setup
         created_user, _, _, _ = initialized_users
 
         # Test
         stored_objects = user_repository.get_many(
             db=self.test_db,
-            filter=[
-                FilterBy(key="email", value="victor.sandoval@rfs-example.com"),
-                FilterBy(key="is_active", value="true"),
-            ],
-            sort=SortBy(key="created_at", by=SortOptions.asc),
+            filter=UserFilterParams(
+                email="victor.sandoval@rfs-example.com",
+                is_active=True,
+            ),
         )
 
         # Validation
         assert stored_objects is not None
         assert 1 == len(stored_objects)
         assert created_user.model_dump() == stored_objects[0].model_dump()
+
+        # Clean-up
+        ...
+
+    def test_get_many_with_sorting(self, initialized_users):  # noqa F811
+        # Setup
+        expected_full_names = list(user.full_name for user in initialized_users).sort()
+
+        # Test
+        stored_objects = user_repository.get_many(
+            db=self.test_db,
+            filter=UserFilterParams(is_active=True),
+            sort=SortParams(sort_by="created_at", sort_order="asc"),
+        )
+
+        # Validation
+        assert stored_objects is not None
+        assert len(initialized_users) == len(stored_objects)
+        assert (
+            expected_full_names
+            == list(user.full_name for user in stored_objects).sort()
+        )
 
         # Clean-up
         ...
