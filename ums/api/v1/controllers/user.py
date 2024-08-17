@@ -2,8 +2,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr
 
-from ums.crud.user.repository import FilterBy, user_repository
-from ums.db.session import get_session
+from ums.crud.user.repository import User, UserFilterParams, user_repository
+from ums.db.session import Session
 
 
 class UserPublic(BaseModel):
@@ -23,19 +23,19 @@ def get_user_public_info(user) -> UserPublic:
     return public_user_info
 
 
-def get_user_by_name(name: str):
+def get_user_by_name(name: str, db: Session) -> User | None:
     user = user_repository.get_by(
-        db=next(get_session()),
-        filter=FilterBy(key="name", value=name),
+        db=db,
+        filter=UserFilterParams(name=name),
     )
     return user
 
 
-def get_user_role_id(name: str) -> UUID | None:
+def get_user_role_id(name: str, db: Session) -> UUID | None:
     """Get the role_id of a user."""
     user = user_repository.get_by(
-        db=next(get_session()),
-        filter=FilterBy(key="name", value=name),
+        db=db,
+        filter=UserFilterParams(name=name),
     )
     if user:
         return user.role_id
