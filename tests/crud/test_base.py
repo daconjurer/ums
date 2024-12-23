@@ -3,7 +3,7 @@ import uuid
 import pytest
 from sqlmodel import Field
 
-from tests.fixtures import get_session, setup_and_teardown_db  # noqa F401
+from tests.fixtures import async_session, engine, setup_and_teardown_db  # noqa F401
 from ums.core.exceptions import UMSException
 from ums.crud.base import BaseRepository, CreateSchema, UpdateSchema
 from ums.models import Base
@@ -33,15 +33,14 @@ class DummyModelUpdate(UpdateSchema):
 class TestBaseRepository:
     def setup_method(self):
         self.test_crud_repository = BaseRepository(model=DummyModel)
-        self.test_db = next(get_session())
 
-    def test_class_add(self):
+    async def test_add(self, async_session):  # noqa F811
         # Setup
         test_add_record = DummyModelCreate(a=1, b=2)
 
         # Test
-        created_object = self.test_crud_repository.add(
-            db=self.test_db,
+        created_object = await self.test_crud_repository.add(
+            db=async_session,
             input_object=test_add_record,
         )
 
@@ -53,17 +52,17 @@ class TestBaseRepository:
         # Clean-up
         ...
 
-    def test_get(self):
+    async def test_get(self, async_session):  # noqa F811
         # Setup
-        test_record = DummyModel(a=1, b=2)
-        created_object = self.test_crud_repository.add(
-            db=self.test_db,
-            input_object=test_record,
+        test_add_record = DummyModelCreate(a=1, b=2)
+        created_object = await self.test_crud_repository.add(
+            db=async_session,
+            input_object=test_add_record,
         )
 
         # Test
-        stored_object = self.test_crud_repository.get(
-            db=self.test_db,
+        stored_object = await self.test_crud_repository.get(
+            db=async_session,
             id=created_object.id,
         )
 
@@ -74,7 +73,7 @@ class TestBaseRepository:
         # Clean-up
         ...
 
-    def test_get_many(self):
+    async def test_get_many(self, async_session):  # noqa F811
         # Setup
         page = 2
         items_limit = 10
@@ -84,11 +83,11 @@ class TestBaseRepository:
         created_objects = []
 
         for _ in range(15):
-            test_record = DummyModel(a=x, b=y)
+            test_record = DummyModelCreate(a=x, b=y)
             test_records.append(test_record)
 
-            created_object = self.test_crud_repository.add(
-                db=self.test_db,
+            created_object = await self.test_crud_repository.add(
+                db=async_session,
                 input_object=test_record,
             )
             created_objects.append(created_object.model_copy(deep=True))
@@ -96,8 +95,8 @@ class TestBaseRepository:
             y += 1
 
         # Test
-        stored_objects = self.test_crud_repository.get_many(
-            db=self.test_db,
+        stored_objects = await self.test_crud_repository.get_many(
+            db=async_session,
             page=page,
             limit=items_limit,
         )
@@ -112,18 +111,18 @@ class TestBaseRepository:
         # Clean-up
         ...
 
-    def test_update_valid(self):
+    async def test_update_valid(self, async_session):  # noqa F811
         # Setup
-        test_record = DummyModel(a=1, b=2)
-        created_object = self.test_crud_repository.add(
-            db=self.test_db,
+        test_record = DummyModelCreate(a=1, b=2)
+        created_object = await self.test_crud_repository.add(
+            db=async_session,
             input_object=test_record,
         )
-        test_update_record = DummyModelCreate(a=1, b=2)
+        test_update_record = DummyModelUpdate(a=1, b=2)
 
         # Test
-        updated_object = self.test_crud_repository.update(
-            db=self.test_db,
+        updated_object = await self.test_crud_repository.update(
+            db=async_session,
             obj_id=created_object.id,
             input_object=test_record,
         )
@@ -136,18 +135,18 @@ class TestBaseRepository:
         # Clean-up
         ...
 
-    def test_update_invalid(self):
+    async def test_update_invalid(self, async_session):  # noqa F811
         # Setup
-        test_record = DummyModel(a=1, b=2)
-        _ = self.test_crud_repository.add(
-            db=self.test_db,
+        test_record = DummyModelCreate(a=1, b=2)
+        _ = await self.test_crud_repository.add(
+            db=async_session,
             input_object=test_record,
         )
 
         # Test & validation
         with pytest.raises(UMSException) as exception_info:
-            _ = self.test_crud_repository.update(
-                db=self.test_db,
+            _ = await self.test_crud_repository.update(
+                db=async_session,
                 obj_id=uuid.UUID("293f88c2-e19c-4e9d-b133-277d4e76a479"),
                 input_object=test_record,
             )
@@ -157,17 +156,17 @@ class TestBaseRepository:
         # Clean-up
         ...
 
-    def test_delete(self):
+    async def test_delete(self, async_session):  # noqa F811
         # Setup
-        test_record = DummyModel(a=1, b=2)
-        created_object = self.test_crud_repository.add(
-            db=self.test_db,
+        test_record = DummyModelCreate(a=1, b=2)
+        created_object = await self.test_crud_repository.add(
+            db=async_session,
             input_object=test_record,
         )
 
         # Test
-        deleted_object = self.test_crud_repository.delete(
-            db=self.test_db,
+        deleted_object = await self.test_crud_repository.delete(
+            db=async_session,
             obj_id=created_object.id,
         )
 

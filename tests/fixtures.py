@@ -1,30 +1,43 @@
 from uuid import UUID
 
-import pytest
+import pytest_asyncio
 from fastapi.testclient import TestClient
 
 from ums.core.app_factory import create_app
 from ums.core.security import get_password_hash
-from ums.db.session import drop_db, get_session, setup_db
+from ums.db.async_connection import (
+    DatabaseManager,
+    create_custom_engine,
+    get_async_session,
+)
 from ums.models import Group, Permissions, Role, User
+from ums.settings.application import get_app_settings
+
+db_settings = get_app_settings().db
 
 
-@pytest.fixture(autouse=True)
-def db():
-    return next(get_session())
+@pytest_asyncio.fixture(scope="class")
+async def async_session(session_generator=get_async_session):
+    return session_generator
 
 
-@pytest.fixture(autouse=True)
-def setup_and_teardown_db():
-    setup_db()
+@pytest_asyncio.fixture(scope="class")
+async def engine():
+    engine = create_custom_engine(str(db_settings.uri))
+    yield engine
+    engine.sync_engine.dispose()
+
+
+@pytest_asyncio.fixture(autouse=True)
+async def setup_and_teardown_db(engine):
+    await DatabaseManager.drop_db(engine=engine)
+    await DatabaseManager.setup_db(engine=engine)
     yield
-    drop_db()
+    await DatabaseManager.drop_db(engine=engine)
 
 
-@pytest.fixture
-def initialized_permissions(db):
-    setup_db()
-
+@pytest_asyncio.fixture
+async def initialized_roles(async_session):  # noqa F811
     users_permission = Permissions(
         id=UUID("c0d6a4f1-bb1d-471f-ac5f-06c2691c0390"),
         name="users",
@@ -36,54 +49,36 @@ def initialized_permissions(db):
         description="List all the user's details",
     )
 
-    db.add(users_permission)
-    db.add(me_permission)
-    db.commit()
-    db.refresh(users_permission)
-    db.refresh(me_permission)
-
-    yield users_permission, me_permission
-
-
-@pytest.fixture
-def initialized_roles(db, initialized_permissions):
-    users_permission, me_permission = initialized_permissions
-
-    setup_db()
-
-    role_admin = Role(
+    admin_role = Role(
         id=UUID("30ba096f-1d1a-4d6e-bd35-0d2c83a6dc7b"),
         name="Admin",
         description="Admin role description",
         permissions=[users_permission, me_permission],
     )
-    role_maintainer = Role(
+    maintainer_role = Role(
         id=UUID("7995971c-a9a7-4737-a440-cf0bf2ae353c"),
         name="Maintainer",
         description="Maintainer role description",
         permissions=[me_permission],
     )
-    role_user = Role(
+    user_role = Role(
         id=UUID("67276d92-b3d8-40c6-b5b6-327add57796a"),
         name="User",
         description="User role description",
     )
 
-    db.add(role_admin)
-    db.add(role_maintainer)
-    db.add(role_user)
-    db.commit()
-    db.refresh(role_admin)
-    db.refresh(role_maintainer)
-    db.refresh(role_user)
+    async with async_session() as session:
+        session.add_all([users_permission, me_permission])
+        session.add_all([admin_role, maintainer_role, user_role])
+        admin_role = await session.merge(admin_role)
+        maintainer_role = await session.merge(maintainer_role)
+        user_role = await session.merge(user_role)
 
-    yield role_admin, role_maintainer, role_user
+    yield admin_role, maintainer_role, user_role
 
 
-@pytest.fixture
-def initialized_groups(db):
-    setup_db()
-
+@pytest_asyncio.fixture
+async def initialized_groups(async_session):
     test_group_1 = Group(
         id=UUID("369eb0b1-50c5-4296-b245-56e7c2a6fa57"),
         name="Group1",
@@ -100,19 +95,15 @@ def initialized_groups(db):
         location="Inverness",
     )
 
-    db.add(test_group_1)
-    db.add(test_group_2)
-    db.add(test_group_3)
-    db.commit()
-    db.refresh(test_group_1)
-    db.refresh(test_group_2)
-    db.refresh(test_group_3)
+    async with async_session() as session:
+        session.add_all([test_group_1, test_group_2, test_group_3])
+        test_group_1
 
     yield test_group_1, test_group_2, test_group_3
 
 
-@pytest.fixture
-def initialized_users(db):
+@pytest_asyncio.fixture
+async def initialized_users(async_session):
     test_user_1 = User(
         id=UUID("f18941a4-bb0e-444a-b6a0-a19509cc6089"),
         name="vic",
@@ -142,130 +133,150 @@ def initialized_users(db):
         password=get_password_hash("password4"),
     )
 
-    db.add(test_user_1)
-    db.add(test_user_2)
-    db.add(test_user_3)
-    db.add(test_user_4)
-    db.commit()
-    db.refresh(test_user_1)
-    db.refresh(test_user_2)
-    db.refresh(test_user_3)
-    db.refresh(test_user_4)
+    async with async_session() as session:
+        session.add_all([test_user_1, test_user_2, test_user_3, test_user_4])
+        test_user_1 = await session.merge(test_user_1)
+        test_user_2 = await session.merge(test_user_2)
+        test_user_3 = await session.merge(test_user_3)
+        test_user_4 = await session.merge(test_user_4)
 
     yield test_user_1, test_user_2, test_user_3, test_user_4
 
 
-@pytest.fixture
-def initialized_admin(db, initialized_groups, initialized_roles):
-    group_alpha, _, _ = initialized_groups
-    admin_role, _, _ = initialized_roles
+@pytest_asyncio.fixture
+async def initialized_admin(async_session):
+    users_permission = Permissions(
+        id=UUID("90d7a1fc-c255-4315-a89d-67e3c7b09ae1"),
+        name="users",
+        description="List all the users",
+    )
+    me_permission = Permissions(
+        id=UUID("54f5244e-fc40-4f80-b7bc-b342522b89ac"),
+        name="me",
+        description="List all the user's details",
+    )
+    admin_role = Role(
+        id=UUID("8750dc45-b226-4f9c-8707-a1fadba0efaf"),
+        name="Admin",
+        description="Admin role description",
+        permissions=[users_permission, me_permission],
+    )
 
-    current_user = User(
+    admin_group = Group(
+        id=UUID("343887c7-7f49-46e6-8a0a-5f7ed66576cb"),
+        name="AdminGroup",
+        location="Glasgow",
+    )
+
+    admin_user = User(
         id=UUID("6dd0434c-ca7f-4454-8bb8-d589b8a0ce99"),
         name="TheAdmin",
         full_name="The Admin",
         email="the.admin@rfs-example.com",
         password=get_password_hash("adminspassword1"),
-        groups=[group_alpha],
+        groups=[admin_group],
         role_id=admin_role.id,
     )
-    db.add(current_user)
-    db.commit()
-    db.refresh(current_user)
 
-    yield current_user, admin_role
+    async with async_session() as session:
+        session.add(users_permission)
+        session.add(me_permission)
+
+        session.add(admin_role)
+        session.add(admin_group)
+
+        session.add(admin_user)
+
+        admin_user = await session.merge(admin_user)
+        admin_role = await session.merge(admin_role)
+
+    yield admin_user, admin_role
 
 
-@pytest.fixture
-def initialized_maintainer(db, initialized_groups, initialized_roles):
-    group_alpha, _, _ = initialized_groups
-    _, maintainer_role, _ = initialized_roles
+@pytest_asyncio.fixture
+async def initialized_maintainer(async_session):
+    me_permission = Permissions(
+        id=UUID("59899a9a-5244-40b6-89d8-2758cac197b8"),
+        name="me",
+        description="List all the user's details",
+    )
 
-    current_user = User(
+    maintainer_role = Role(
+        id=UUID("93d72368-ece7-433a-b5f1-243466f9db30"),
+        name="Maintainer",
+        description="Maintainer role description",
+        permissions=[me_permission],
+    )
+
+    maintainer_group = Group(
+        id=UUID("196acb0e-5133-4b0a-8b71-839d0b03605c"),
+        name="MaintainerGroup",
+        location="Glasgow",
+    )
+
+    maintainer_user = User(
         id=UUID("ea1a76c1-3a1e-4952-a190-d510843b36a7"),
         name="TheMaintainer",
         full_name="The Maintainer",
         email="the.maintainer@rfs-example.com",
         password=get_password_hash("maintainerspassword1"),
-        groups=[group_alpha],
+        groups=[maintainer_group],
         role_id=maintainer_role.id,
     )
-    db.add(current_user)
-    db.commit()
-    db.refresh(current_user)
 
-    yield current_user, maintainer_role
+    async with async_session() as session:
+        session.add(me_permission)
+
+        session.add(maintainer_role)
+        session.add(maintainer_group)
+
+        session.add(maintainer_user)
+
+        maintainer_user = await session.merge(maintainer_user)
+        maintainer_role = await session.merge(maintainer_role)
+
+    yield maintainer_user, maintainer_role
 
 
-@pytest.fixture
-def initialized_engineer(db, initialized_groups, initialized_roles):
-    group_alpha, _, _ = initialized_groups
-    _, _, engineer_role = initialized_roles
+@pytest_asyncio.fixture
+async def valid_user_credentials(async_session):
+    username = "ValidUser"
+    password = "validsafepassword1"
 
-    current_user = User(
-        id=UUID("8ada3a8b-67d4-4522-bb8f-67da31a7d629"),
-        name="TheEngineer",
-        full_name="The Engineer",
-        email="the.engineer@rfs-example.com",
-        password=get_password_hash("engineerspassword1"),
-        groups=[group_alpha],
-        role_id=engineer_role.id,
+    me_permission = Permissions(
+        id=UUID("1d5228c8-7934-4370-b4a1-f56ae802075a"),
+        name="me",
+        description="List all the user's details",
     )
-    db.add(current_user)
-    db.commit()
-    db.refresh(current_user)
-
-    yield current_user, engineer_role
-
-
-@pytest.fixture
-def initialized_engineer_credentials(db, initialized_groups, initialized_roles):
-    group_alpha, _, _ = initialized_groups
-    _, _, engineer_role = initialized_roles
-
-    username = "TheEngineerAndCredentials"
-    password = "engineerspassword1"
-
-    current_user = User(
+    valid_role = Role(
+        id=UUID("95ad20b5-473d-4255-830a-a7df94eb338d"),
+        name="ValidRole",
+        description="Valid role description",
+        permissions=[me_permission],
+    )
+    valid_user = User(
         id=UUID("c8ee39f7-2213-4118-b0a6-2f8c0e882239"),
         name=username,
         full_name="Engineer Credentials",
         email="engineer.credentials@rfs-example.com",
         password=get_password_hash(password),
-        groups=[group_alpha],
-        role_id=engineer_role.id,
+        groups=[],
+        role_id=valid_role.id,
     )
-    db.add(current_user)
-    db.commit()
-    db.refresh(current_user)
+
+    async with async_session() as session:
+        session.add(valid_role)
+
+    async with async_session() as session:
+        session.add(valid_user)
 
     yield username, password
 
 
-@pytest.fixture
-def initialized_role_with_no_permissions(db):
-    role_no_permissions = Role(
-        id=UUID("f1e3e5d7-0c1d-4d9b-bf6b-1b3a1c3b7e9b"),
-        name="NoPermissions",
-        description="Role with no permissions",
-    )
-
-    db.add(role_no_permissions)
-    db.commit()
-    db.refresh(role_no_permissions)
-
-    yield role_no_permissions
-
-
-@pytest.fixture
-def initialized_user_with_no_scopes(
-    db,
-    initialized_groups,
-):
-    group_alpha, _, _ = initialized_groups
-
-    username = "TheEngineerAndCredentialsButNoScopes"
-    password = "engineerspassword1"
+@pytest_asyncio.fixture
+async def valid_user_with_no_scopes(async_session):
+    username = "ValidUserButNoScopes"
+    password = "verysafepassword2"
 
     current_user = User(
         id=UUID("c8ee39f7-2213-4118-b0a6-2f8c0e882239"),
@@ -273,12 +284,12 @@ def initialized_user_with_no_scopes(
         full_name="Engineer Credentials",
         email="engineer.credentials@rfs-example.com",
         password=get_password_hash(password),
-        groups=[group_alpha],
+        groups=[],
         role_id=None,
     )
-    db.add(current_user)
-    db.commit()
-    db.refresh(current_user)
+
+    async with async_session() as session:
+        session.add(current_user)
 
     yield username, password
 
@@ -286,6 +297,6 @@ def initialized_user_with_no_scopes(
 # Route testing
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def client() -> TestClient:
     return TestClient(app=create_app())

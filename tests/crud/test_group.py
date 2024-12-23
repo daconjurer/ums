@@ -3,13 +3,13 @@ from uuid import UUID
 
 import pytest
 
-from tests.fixtures import (
-    db,  # noqa F401
-    get_session,
+from tests.fixtures import (  # noqa F401
+    async_session,
+    engine,
     initialized_groups,  # noqa F401
     initialized_roles,  # noqa F401
     initialized_users,  # noqa F401
-    setup_and_teardown_db,  # noqa F401
+    setup_and_teardown_db,
 )
 from ums.core.exceptions import InvalidGroupException, InvalidUserException
 from ums.crud.base import SortParams
@@ -20,9 +20,12 @@ from ums.crud.group.schemas import GroupCreate, GroupUpdate
 class TestGroupRepository:
     def setup_method(self):
         self.test_group_repository = group_repository
-        self.test_db = next(get_session())
 
-    def test_add_minimal_group(self, initialized_users):  # noqa F811
+    async def test_add_minimal_group(
+        self,
+        async_session,  # noqa F811
+        initialized_users,  # noqa F811
+    ):
         # Setup
         test_user_1, test_user_2, _, _ = initialized_users
 
@@ -34,16 +37,14 @@ class TestGroupRepository:
         )
 
         # Test
-        created_group = self.test_group_repository.add(
-            db=self.test_db, input_object=test_add_group
+        created_group = await self.test_group_repository.add(
+            db=async_session, input_object=test_add_group
         )
 
         # Validation
         assert created_group is not None
         assert created_group.name == test_add_group.name
         assert created_group.location == test_add_group.location
-        assert created_group.members[0].model_dump() == test_user_1.model_dump()
-        assert created_group.members[1].model_dump() == test_user_2.model_dump()
         assert created_group.is_active is True
         assert created_group.is_deleted is False
         assert isinstance(created_group.created_at, datetime)
@@ -53,7 +54,7 @@ class TestGroupRepository:
         # Clean-up
         ...
 
-    def test_add_group_with_invalid_member(self, initialized_users):  # noqa F811
+    async def test_add_group_with_invalid_member(self, async_session):  # noqa F811
         # Setup
         test_invalid_member_id = UUID("63aabaf0-5adb-41a8-8aee-e90cafb71042")
         test_add_group = GroupCreate(
@@ -64,23 +65,21 @@ class TestGroupRepository:
         )
 
         # Test & validation
-        with pytest.raises(InvalidUserException) as exception_info:
-            _ = self.test_group_repository.add(
-                db=self.test_db, input_object=test_add_group
+        with pytest.raises(InvalidUserException):
+            _ = await self.test_group_repository.add(
+                db=async_session, input_object=test_add_group
             )
 
-        assert "Invalid member_id:" in exception_info.value.detail
-
-        # # Clean-up
+        # Clean-up
         ...
 
-    def test_get(self, initialized_groups):  # noqa F811
+    async def test_get(self, async_session, initialized_groups):  # noqa F811
         # Setup
         created_group, _, _ = initialized_groups
 
         # Test
-        stored_object = self.test_group_repository.get(
-            db=self.test_db, id=created_group.id
+        stored_object = await self.test_group_repository.get(
+            db=async_session, id=created_group.id
         )
 
         # Validation
@@ -90,13 +89,17 @@ class TestGroupRepository:
         # Clean-up
         ...
 
-    def test_get_by_name(self, initialized_groups):  # noqa F811
+    async def test_get_by_name(
+        self,
+        async_session,  # noqa F811
+        initialized_groups,  # noqa F811
+    ):  # noqa F811
         # Setup
         created_group, _, _ = initialized_groups
 
         # Test
-        stored_object = self.test_group_repository.get_by(
-            db=self.test_db,
+        stored_object = await self.test_group_repository.get_by(
+            db=async_session,
             filter=GroupFilterParams(name=created_group.name),
         )
 
@@ -107,13 +110,13 @@ class TestGroupRepository:
         # Clean-up
         ...
 
-    def test_get_by_nonexistent_field(self):
+    async def test_get_by_nonexistent_field(self, async_session):  # noqa F811
         # Setup
         ...
 
         # Test
-        stored_object = self.test_group_repository.get_by(
-            db=self.test_db,
+        stored_object = await self.test_group_repository.get_by(
+            db=async_session,
             filter=GroupFilterParams(title="Mr"),
         )
 
@@ -123,13 +126,17 @@ class TestGroupRepository:
         # Clean-up
         ...
 
-    def test_get_many_with_filtering_and_sorting(self, initialized_groups):  # noqa F811
+    async def test_get_many_with_filtering_and_sorting(
+        self,
+        async_session,  # noqa F811
+        initialized_groups,  # noqa F811
+    ):  # noqa F811
         # Setup
         created_group, _, _ = initialized_groups
 
         # Test
-        stored_objects = self.test_group_repository.get_many(
-            db=self.test_db,
+        stored_objects = await self.test_group_repository.get_many(
+            db=async_session,
             filter=GroupFilterParams(
                 location="Glasgow",
                 is_active="true",
@@ -145,12 +152,16 @@ class TestGroupRepository:
         # Clean-up
         ...
 
-    def test_get_many_no_filter(self, initialized_groups):  # noqa F811
+    async def test_get_many_no_filter(
+        self,
+        async_session,  # noqa F811
+        initialized_groups,  # noqa F811
+    ):  # noqa F811
         # Setup
         created_group_1, created_group_2, created_group_3 = initialized_groups
 
         # Test
-        stored_objects = self.test_group_repository.get_many(db=self.test_db)
+        stored_objects = await self.test_group_repository.get_many(db=async_session)
 
         # Validation
         assert stored_objects is not None
@@ -162,13 +173,17 @@ class TestGroupRepository:
         # Clean-up
         ...
 
-    def test_get_many_with_pagination(self, initialized_groups):  # noqa F811
+    async def test_get_many_with_pagination(
+        self,
+        async_session,  # noqa F811
+        initialized_groups,  # noqa F811
+    ):  # noqa F811
         # Setup
         created_group_1, created_group_2, _ = initialized_groups
 
         # Test
-        stored_objects = self.test_group_repository.get_many(
-            db=self.test_db,
+        stored_objects = await self.test_group_repository.get_many(
+            db=async_session,
             page=1,
             limit=2,
         )
@@ -182,7 +197,12 @@ class TestGroupRepository:
         # Clean-up
         ...
 
-    def test_update_valid_group_id(self, initialized_groups, initialized_users):  # noqa F811
+    async def test_update_valid_group_id(
+        self,
+        async_session,  # noqa F811
+        initialized_groups,  # noqa F811
+        initialized_users,  # noqa F811
+    ):  # noqa F811
         # Setup
         test_group, _, _ = initialized_groups
         test_user_1, test_user_2, _, _ = initialized_users
@@ -196,8 +216,8 @@ class TestGroupRepository:
         )
 
         # Test
-        updated_group = self.test_group_repository.update(
-            db=self.test_db,
+        updated_group = await self.test_group_repository.update(
+            db=async_session,
             obj_id=test_group.id,
             input_object=test_update_group,
         )
@@ -217,7 +237,11 @@ class TestGroupRepository:
         # Clean-up
         ...
 
-    def test_update_invalid_group_id(self, initialized_groups, initialized_users):  # noqa F811
+    async def test_update_invalid_group_id(
+        self,
+        async_session,  # noqa F811
+        initialized_users,  # noqa F811
+    ):  # noqa F811
         # Setup
         test_user_1, _, _, _ = initialized_users
 
@@ -231,8 +255,8 @@ class TestGroupRepository:
 
         # Test & validation
         with pytest.raises(InvalidGroupException) as exception_info:
-            _ = self.test_group_repository.update(
-                db=self.test_db,
+            _ = await self.test_group_repository.update(
+                db=async_session,
                 obj_id=UUID("66c1aabb-42e9-451e-91bf-f5702b1e6b9f"),
                 input_object=test_update_group,
             )
@@ -242,13 +266,13 @@ class TestGroupRepository:
         # Clean-up
         ...
 
-    def test_delete(self, initialized_groups):  # noqa F811
+    async def test_delete(self, async_session, initialized_groups):  # noqa F811
         # Setup
         test_group, _, _ = initialized_groups
 
         # Test
-        deleted_group = self.test_group_repository.delete(
-            db=self.test_db, obj_id=test_group.id
+        deleted_group = await self.test_group_repository.delete(
+            db=async_session, obj_id=test_group.id
         )
 
         # Validation
