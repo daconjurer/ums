@@ -1,44 +1,33 @@
-from typing import Any
-
 from sqlmodel import select
 
 from ums.core import exceptions
 from ums.crud.base import CreateSchema, UpdateSchema
-from ums.db.session import Session
+from ums.db.async_connection import AsyncDatabaseSession
 from ums.models import User
 
 
 class GroupValidator:
     """Validates a GroupCreate or GroupUpdate object."""
 
-    def validate(
-        self, db: Session, input_object: CreateSchema | UpdateSchema
-    ) -> dict[str, Any]:
+    async def validate(
+        self, db: AsyncDatabaseSession, input_object: CreateSchema | UpdateSchema
+    ) -> None:
         input_object_data = input_object.model_dump()
 
-        # Check members_ids are valid
-        group_users = []
+        # Relational integrity validation
         if input_object_data.get("members_ids"):
-            statement = select(User).where(User.is_active == True)  # noqa: E712
-            active_users = db.scalars(statement).all()
+            input_members_ids = set(input_object_data["members_ids"])
+            statement = select(User.id).where(
+                User.is_active == True,  # noqa: E712
+                User.id.in_(input_members_ids),  # type: ignore[attr-defined]
+            )
 
-            if active_users:
-                active_users_ids_set = {user.id for user in active_users}
-                input_members_ids_set = set(input_object_data["members_ids"])
+            async with db() as session:
+                result = await session.scalars(statement)
+                valid_user_ids = set(result.all())
 
-                invalid_members_ids = input_members_ids_set - active_users_ids_set
-
-                if invalid_members_ids:
-                    raise exceptions.InvalidUserException(
-                        f"Invalid member_id: {invalid_members_ids.pop()}"
-                    )
-
-                group_users = [
-                    group for group in active_users if group.id in input_members_ids_set
-                ]
-
-        # Assign users
-        input_object_data.pop("members_ids")
-        input_object_data["members"] = group_users
-
-        return input_object_data
+            if not valid_user_ids:
+                invalid_members_ids = input_members_ids - valid_user_ids
+                raise exceptions.InvalidUserException(
+                    f"Invalid member_ids: {invalid_members_ids.pop()}"
+                )

@@ -10,6 +10,7 @@ else:
 
 import uuid
 
+from sqlalchemy.types import TIMESTAMP
 from sqlmodel import Field, Relationship, SQLModel
 
 # Base data model
@@ -17,9 +18,13 @@ from sqlmodel import Field, Relationship, SQLModel
 
 class Base(SQLModel):
     id: uuid.UUID
-    created_at: datetime = Field(default=datetime.now(tz=UTC))
-    updated_at: datetime = Field(default=datetime.now(tz=UTC))
-    deleted_at: datetime | None = None
+    created_at: datetime = Field(
+        sa_type=TIMESTAMP(timezone=True), default=datetime.now(UTC)
+    )
+    updated_at: datetime = Field(
+        sa_type=TIMESTAMP(timezone=True), default=datetime.now(UTC)
+    )
+    deleted_at: datetime | None = Field(sa_type=TIMESTAMP(timezone=True), default=None)
 
 
 # Associative tables (many-to-many relationships)
@@ -135,4 +140,4 @@ class User(Base, table=True):
     is_active: bool = True
     is_deleted: bool = False
     role_id: uuid.UUID | None = Field(default=None, foreign_key="roles.id")
-    verified_at: datetime | None = None
+    verified_at: datetime | None = Field(sa_type=TIMESTAMP(timezone=True), default=None)

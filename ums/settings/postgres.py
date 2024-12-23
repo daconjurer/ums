@@ -15,7 +15,7 @@ class PostgresSettings(CommonSettings):
         if not v:
             # .env file with settings but no URI
             return PostgresDsn.build(
-                scheme="postgresql",
+                scheme="postgresql+asyncpg",
                 username=values.data.get("user", ""),
                 password=values.data.get("password", ""),
                 host=values.data.get("host", ""),
