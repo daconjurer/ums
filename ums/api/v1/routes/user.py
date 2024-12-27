@@ -10,7 +10,7 @@ from ums.crud.user.repository import (
     UserSortOptions,
     user_repository,
 )
-from ums.db.session import Session, get_session
+from ums.db.async_connection import AsyncDatabaseSession, db
 from ums.middlewares.filter_sort import parse_sorting
 from ums.models import User
 
@@ -20,15 +20,15 @@ router = APIRouter(tags=["user"])
 @router.get("/users")
 async def read_users(
     current_user: Annotated[User, Security(get_current_active_user, scopes=["users"])],
-    db: Session = Depends(get_session),
-    filter: UserFilterParams = Depends(),
-    sort: SortParams = Depends(parse_sorting(UserSortOptions)),
+    db: Annotated[AsyncDatabaseSession, Depends(db)],
+    filter: Annotated[UserFilterParams, Depends()],
+    sort: Annotated[SortParams, Depends(parse_sorting(UserSortOptions))],
     limit: int = Query(10, ge=1, le=50),
     page: int = Query(1, ge=1),
 ) -> list[user.UserPublic]:
     users_public_info = []
 
-    users_info = user_repository.get_many(
+    users_info = await user_repository.get_many(
         db=db,
         filter=filter,
         sort=sort,

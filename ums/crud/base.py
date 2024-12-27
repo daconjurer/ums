@@ -18,9 +18,10 @@ else:
     UTC = timezone.utc
 
 from fastapi.encoders import jsonable_encoder
-from sqlmodel import Session, SQLModel, select
+from sqlmodel import SQLModel, select
 
 from ums.core.exceptions import UMSException
+from ums.db.async_connection import AsyncDatabaseSession
 from ums.middlewares.filter_sort import BaseFilterParams, SortParams
 from ums.models import Base
 
@@ -57,9 +58,9 @@ class BaseRepository(BaseModel, Generic[ModelType]):
             return {}
         return {attr: getattr(self.model, attr) for attr in self.sort_options}
 
-    def add(
+    async def add(
         self,
-        db: Session,
+        db: AsyncDatabaseSession,
         input_object: CreateSchema,
     ) -> Base:
         """Create operation.
@@ -68,23 +69,33 @@ class BaseRepository(BaseModel, Generic[ModelType]):
         """
         input_object_data = jsonable_encoder(input_object)
         db_obj = self.model(**input_object_data)
-        db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
+
+        async with db() as session:
+            session.add(db_obj)
+
+        async with db() as session:
+            db_obj = await session.merge(db_obj)
+
         return db_obj
 
-    def get(self, db: Session, id: uuid.UUID) -> Base | None:
+    async def get(self, db: AsyncDatabaseSession, id: uuid.UUID) -> Base | None:
         """Read operation.
 
         Fetches a single record with the provided ID.
+
+        Note: This method is very generic and does not consider relationships.
+        If using lazy loading, the session must remain open until the object is used.
         """
         statement = select(self.model).where(id == self.model.id)  # type: ignore
-        result = db.scalar(statement)
+
+        async with db() as session:
+            result = await session.scalar(statement)
+
         return result
 
-    def get_by(
+    async def get_by(
         self,
-        db: Session,
+        db: AsyncDatabaseSession,
         filter: BaseFilterParams,
     ) -> Base | None:
         """Read operation.
@@ -101,18 +112,22 @@ class BaseRepository(BaseModel, Generic[ModelType]):
 
         for key, value in filters.items():
             filter_field = self.filter_params_dict.get(key)
+
             if filter_field:
                 statement = select(self.model).where(filter_field == value)
-                return db.scalar(statement)
+
+                async with db() as session:
+                    return await session.scalar(statement)
+
         return None
 
-    def get_many(
+    async def get_many(
         self,
-        db: Session,
+        db: AsyncDatabaseSession,
         filter: BaseFilterParams | None = None,
         sort: SortParams | None = None,
-        limit: int | None = None,
-        page: int | None = None,
+        limit: int | None = 5,
+        page: int | None = 1,
     ) -> list[Base]:
         """Read operation.
 
@@ -146,19 +161,24 @@ class BaseRepository(BaseModel, Generic[ModelType]):
 
         # Query
         logger.debug(statement.compile(compile_kwargs={"literal_binds": True}))
-        return list(db.scalars(statement).all())
 
-    def update(
+        async with db() as session:
+            result = await session.scalars(statement)
+            result = list(result.all())
+
+        return result
+
+    async def update(
         self,
-        db: Session,
+        db: AsyncDatabaseSession,
         obj_id: uuid.UUID,
         input_object: UpdateSchema,
-    ) -> Base:
+    ) -> Base | None:
         """Update operation.
 
         Updates the record with the provided ID using the UpdateSchema schema.
         """
-        db_obj = self.get(db, obj_id)
+        db_obj = await self.get(db, obj_id)
 
         if not db_obj:
             raise UMSException(status_code=404, detail="Object not found.")
@@ -170,24 +190,29 @@ class BaseRepository(BaseModel, Generic[ModelType]):
 
         setattr(db_obj, "updated_at", datetime.now(tz=UTC))
 
-        db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
+        async with db() as session:
+            session.add(db_obj)
+
+        async with db() as session:
+            db_obj = await session.merge(db_obj)
+
         return db_obj
 
-    def delete(self, db: Session, obj_id: uuid.UUID) -> Base | None:
+    async def delete(self, db: AsyncDatabaseSession, obj_id: uuid.UUID) -> Base | None:
         """Delete operation.
 
         Deletes the record with the provided ID.
         """
         statement = select(self.model).where(obj_id == self.model.id)  # type: ignore
-        target_object = db.scalar(statement)
 
-        if target_object:
-            target_object.is_deleted = True
-            target_object.is_active = False
-            target_object.deleted_at = datetime.now(tz=UTC)
-            db.add(target_object)
-            db.commit()
+        async with db() as session:
+            target_object = await session.scalar(statement)
+
+            if target_object:
+                target_object.is_deleted = True
+                target_object.is_active = False
+                target_object.deleted_at = datetime.now(tz=UTC)
+
+            session.add(target_object)
 
         return target_object

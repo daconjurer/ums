@@ -8,7 +8,7 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-DOCKER_COMPOSE_FILE="docker/ums-test.yaml"
+DOCKER_COMPOSE_FILE="docker/docker-compose.dev.yaml"
 
 # Initialize an array to store the commands
 commands=()
