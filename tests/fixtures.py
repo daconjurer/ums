@@ -70,7 +70,7 @@ async def initialized_roles(async_session):  # noqa F811
     async with async_session() as session:
         session.add_all([users_permission, me_permission])
         session.add_all([admin_role, maintainer_role, user_role])
-    
+
     async with async_session() as session:
         admin_role = await session.merge(admin_role)
         maintainer_role = await session.merge(maintainer_role)
