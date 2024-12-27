@@ -150,6 +150,8 @@ class UserRepository(BaseRepository[User]):
 
         async with db() as session:
             session.add(db_obj)
+
+        async with db() as session:
             db_obj = await session.merge(db_obj)
 
         return db_obj

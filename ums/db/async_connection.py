@@ -117,7 +117,6 @@ async def get_async_session(
         await session.rollback()
         raise
     finally:
-        ...
         await session.close()
         await connection.close_engine()
 

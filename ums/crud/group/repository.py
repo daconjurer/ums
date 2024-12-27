@@ -151,6 +151,8 @@ class CrudGroup(BaseRepository[Group]):
             setattr(db_obj, "updated_at", datetime.now(tz=UTC))
 
             session.add(db_obj)
+
+        async with db() as session:
             db_obj = await session.merge(db_obj)
 
         return db_obj

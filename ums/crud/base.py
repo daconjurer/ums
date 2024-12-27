@@ -72,6 +72,8 @@ class BaseRepository(BaseModel, Generic[ModelType]):
 
         async with db() as session:
             session.add(db_obj)
+
+        async with db() as session:
             db_obj = await session.merge(db_obj)
 
         return db_obj
@@ -190,6 +192,8 @@ class BaseRepository(BaseModel, Generic[ModelType]):
 
         async with db() as session:
             session.add(db_obj)
+
+        async with db() as session:
             db_obj = await session.merge(db_obj)
 
         return db_obj

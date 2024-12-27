@@ -70,6 +70,8 @@ async def initialized_roles(async_session):  # noqa F811
     async with async_session() as session:
         session.add_all([users_permission, me_permission])
         session.add_all([admin_role, maintainer_role, user_role])
+    
+    async with async_session() as session:
         admin_role = await session.merge(admin_role)
         maintainer_role = await session.merge(maintainer_role)
         user_role = await session.merge(user_role)
@@ -97,7 +99,6 @@ async def initialized_groups(async_session):
 
     async with async_session() as session:
         session.add_all([test_group_1, test_group_2, test_group_3])
-        test_group_1
 
     yield test_group_1, test_group_2, test_group_3
 
@@ -135,6 +136,8 @@ async def initialized_users(async_session):
 
     async with async_session() as session:
         session.add_all([test_user_1, test_user_2, test_user_3, test_user_4])
+
+    async with async_session() as session:
         test_user_1 = await session.merge(test_user_1)
         test_user_2 = await session.merge(test_user_2)
         test_user_3 = await session.merge(test_user_3)
@@ -187,6 +190,7 @@ async def initialized_admin(async_session):
 
         session.add(admin_user)
 
+    async with async_session() as session:
         admin_user = await session.merge(admin_user)
         admin_role = await session.merge(admin_role)
 
@@ -232,6 +236,7 @@ async def initialized_maintainer(async_session):
 
         session.add(maintainer_user)
 
+    async with async_session() as session:
         maintainer_user = await session.merge(maintainer_user)
         maintainer_role = await session.merge(maintainer_role)
 
