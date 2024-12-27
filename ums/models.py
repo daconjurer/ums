@@ -79,6 +79,7 @@ class Group(Base, table=True):
     members: list["User"] = Relationship(
         back_populates="groups",
         link_model=UserGroupLink,
+        sa_relationship_kwargs={"lazy": "selectin"},
     )
     is_active: bool = True
     is_deleted: bool = False
@@ -135,6 +136,7 @@ class User(Base, table=True):
     groups: list[Group] = Relationship(
         back_populates="members",
         link_model=UserGroupLink,
+        sa_relationship_kwargs={"lazy": "selectin"},
     )
     is_verified: bool = False
     is_active: bool = True

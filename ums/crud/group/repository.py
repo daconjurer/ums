@@ -62,8 +62,30 @@ class CrudGroup(BaseRepository[Group]):
         """
         await GroupValidator().validate(db, input_object)
 
-        # Create object
-        return await super().add(db, input_object=input_object)  # type: ignore
+        input_object_data = input_object.model_dump()
+
+        if input_object_data.get("members_ids"):
+            input_members_ids = set(input_object_data["members_ids"])
+            statement = select(User).where(  # type: ignore
+                User.is_active == True,  # noqa: E712
+                User.id.in_(input_members_ids),  # type: ignore
+            )
+
+            async with db() as session:
+                result = await session.scalars(statement)
+                valid_users = result.all()
+        else:
+            valid_users = []
+
+        db_obj = self.model(**input_object_data, members=valid_users)
+
+        async with db() as session:
+            session.add(db_obj)
+
+        async with db() as session:
+            db_obj = await session.merge(db_obj)
+
+        return db_obj
 
     async def get(
         self,
@@ -141,8 +163,11 @@ class CrudGroup(BaseRepository[Group]):
 
                 if valid_users:
                     db_obj.members = valid_users
+            else:
+                db_obj.members = []
 
             update_data = input_object.model_dump(exclude_unset=True)
+            # Remove as it is now the members field
             del update_data["members_ids"]
 
             for key, value in update_data.items():

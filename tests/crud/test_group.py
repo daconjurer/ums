@@ -45,6 +45,41 @@ class TestGroupRepository:
         assert created_group is not None
         assert created_group.name == test_add_group.name
         assert created_group.location == test_add_group.location
+        assert created_group.members[0].model_dump() == test_user_1.model_dump()
+        assert created_group.members[1].model_dump() == test_user_2.model_dump()
+        assert created_group.is_active is True
+        assert created_group.is_deleted is False
+        assert isinstance(created_group.created_at, datetime)
+        assert isinstance(created_group.updated_at, datetime)
+        assert created_group.deleted_at is None
+
+        # Clean-up
+        ...
+
+    async def test_add_group_with_no_members(
+        self,
+        async_session,  # noqa F811
+        initialized_users,  # noqa F811
+    ):
+        # Setup
+        test_user_1, test_user_2, _, _ = initialized_users
+
+        test_add_group = GroupCreate(
+            name="Group1",
+            location="Glasgow",
+            description="Group1 description",
+        )
+
+        # Test
+        created_group = await self.test_group_repository.add(
+            db=async_session, input_object=test_add_group
+        )
+
+        # Validation
+        assert created_group is not None
+        assert created_group.name == test_add_group.name
+        assert created_group.location == test_add_group.location
+        assert created_group.members == []
         assert created_group.is_active is True
         assert created_group.is_deleted is False
         assert isinstance(created_group.created_at, datetime)
