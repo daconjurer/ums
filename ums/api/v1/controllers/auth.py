@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
@@ -9,7 +11,7 @@ from pydantic import BaseModel, ValidationError
 from ums.api.v1.controllers import user as user_controller
 from ums.core import exceptions
 from ums.core.security import verify_password
-from ums.db.session import Session, get_session
+from ums.db.async_connection import AsyncDatabaseSession, db
 from ums.models import User
 from ums.settings.application import get_app_settings
 
@@ -32,8 +34,8 @@ class TokenData(BaseModel):
     scopes: list[str] = []
 
 
-def authenticate_user(db: Session, name: str, password: str) -> User:
-    user = user_controller.get_user_by_name(db=db, name=name)
+async def authenticate_user(db: AsyncDatabaseSession, name: str, password: str) -> User:
+    user = await user_controller.get_user_by_name(db=db, name=name)
     if not user:
         raise exceptions.AuthenticationException("User not found")
     if not verify_password(password, user.password):
@@ -42,9 +44,9 @@ def authenticate_user(db: Session, name: str, password: str) -> User:
 
 
 async def get_current_user(
-    db: Annotated[Session, Depends(get_session)],
     security_scopes: SecurityScopes,
     token: Annotated[str, Depends(oauth2_scheme)],
+    db: Annotated[AsyncDatabaseSession, Depends(db)],
 ):
     if security_scopes.scopes:
         authenticate_value = f'Bearer scope="{security_scopes.scope_str}"'
@@ -69,10 +71,11 @@ async def get_current_user(
             raise credentials_exception
         token_scopes = payload.get("scopes", [])
         token_data = TokenData(scopes=token_scopes, name=name)
-    except (JWTError, ValidationError):
+    except (JWTError, ValidationError) as e:
+        logger.error(f"Error decoding or validating JWT: {e}")
         raise credentials_exception
 
-    user = user_controller.get_user_by_name(db=db, name=token_data.name)
+    user = await user_controller.get_user_by_name(db=db, name=token_data.name)
     if not user:
         raise credentials_exception
 

@@ -1,7 +1,8 @@
+import asyncio
 from uuid import UUID
 
 from ums.core.security import get_password_hash
-from ums.db.session import drop_db, get_session, setup_db
+from ums.db.async_connection import DatabaseManager, get_async_session
 from ums.models import Group, Permissions, Role, User
 
 users_permission = Permissions(
@@ -142,36 +143,33 @@ user_10 = User(
 )
 
 
-def init_db():
-    drop_db()
-    setup_db()
+async def init_db():
+    await DatabaseManager.drop_db()
+    await DatabaseManager.setup_db()
 
-    db = next(get_session())
+    async with get_async_session() as session:
+        session.add_all([users_permission, me_permission, items_permission])
+        session.add_all([role_admin, role_maintainer, role_engineer])
 
-    db.add_all([users_permission, me_permission, items_permission])
-    db.commit()
+    async with get_async_session() as session:
+        session.add_all([group_alpha, group_delta])
 
-    db.add_all([role_admin, role_maintainer, role_engineer])
-    db.commit()
-
-    db.add_all([group_alpha, group_delta])
-    db.commit()
-
-    db.add_all(
-        [
-            user_1,
-            user_2,
-            user_3,
-            user_4,
-            user_5,
-            user_6,
-            user_7,
-            user_8,
-            user_9,
-            user_10,
-        ]
-    )
-    db.commit()
+    async with get_async_session() as session:
+        session.add_all(
+            [
+                user_1,
+                user_2,
+                user_3,
+                user_4,
+                user_5,
+                user_6,
+                user_7,
+                user_8,
+                user_9,
+                user_10,
+            ]
+        )
 
 
-init_db()
+if __name__ == "__main__":
+    asyncio.run(init_db())

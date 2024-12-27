@@ -5,7 +5,10 @@ from typing import Type
 
 from fastapi import Query
 from pydantic import Field
-from sqlmodel import Session
+from sqlalchemy.orm import joinedload
+from sqlmodel import select
+
+from ums.db.async_connection import AsyncDatabaseSession
 
 if sys.version_info > (3, 11):
     from datetime import UTC
@@ -23,6 +26,7 @@ from ums.crud.base import (
     SortParams,
     UpdateSchema,
 )
+from ums.crud.user.schemas import UserCreate
 from ums.crud.user.validation import UserValidator
 from ums.middlewares.filter_sort import SortOptions
 from ums.models import User
@@ -46,7 +50,6 @@ class UserFilterParams(BaseFilterParams):
     )
 
 
-# UserSortOptions = Literal["full_name", "created_at", "updated_at"]
 class UserSortOptions(SortOptions):
     full_name = "full_name"
     created_at = "created_at"
@@ -60,43 +63,50 @@ class UserRepository(BaseRepository[User]):
         member.value for member in UserSortOptions
     )
 
-    def add(self, db: Session, input_object: CreateSchema) -> User:
+    async def add(self, db: AsyncDatabaseSession, input_object: CreateSchema) -> User:
         """Create operation.
 
         Inserts a new User record using the UserCreate schema.
         """
-        validated_user = UserValidator().validate(db, input_object)
+        validated_user = await UserValidator().validate(db, input_object)
 
         # Hash password
         validated_user["password"] = get_password_hash(validated_user["password"])
 
-        de_obj = self.model(**validated_user)
-        db.add(de_obj)
-        db.commit()
-        db.refresh(de_obj)
-        return de_obj  # type: ignore
+        # Create object
+        validated_object = UserCreate(**validated_user)
+        return await super().add(db, validated_object)  # type: ignore
 
-    def get(self, db: Session, id: uuid.UUID) -> User | None:
+    async def get(self, db: AsyncDatabaseSession, id: uuid.UUID) -> User | None:
         """Read operation.
 
         Fetches a single User record with the provided ID.
         """
-        return super().get(db, id)  # type: ignore
+        statement = (
+            select(self.model)
+            .options(joinedload(self.model.groups))  # type: ignore
+            .where(id == self.model.id)
+        )
 
-    def get_by(
+        async with db() as session:
+            result = await session.scalar(statement)
+
+        return result
+
+    async def get_by(
         self,
-        db: Session,
+        db: AsyncDatabaseSession,
         filter: BaseFilterParams,
     ) -> User | None:
         """Read operation.
 
         Fetches a User record by a filter key-value pair.
         """
-        return super().get_by(db, filter)  # type: ignore
+        return await super().get_by(db, filter)  # type: ignore
 
-    def get_many(  # type: ignore[override]
+    async def get_many(  # type: ignore[override]
         self,
-        db: Session,
+        db: AsyncDatabaseSession,
         filter: BaseFilterParams | None = None,
         sort: SortParams | None = None,
         limit: int | None = None,
@@ -107,21 +117,21 @@ class UserRepository(BaseRepository[User]):
         Fetches a list of User records from the database with optional filtering,
          sorting and pagination.
         """
-        return super().get_many(db, filter, sort, limit, page)  # type: ignore
+        return await super().get_many(db, filter, sort, limit, page)  # type: ignore
 
-    def update(
-        self, db: Session, obj_id: uuid.UUID, input_object: UpdateSchema
-    ) -> User:
+    async def update(
+        self, db: AsyncDatabaseSession, obj_id: uuid.UUID, input_object: UpdateSchema
+    ) -> User | None:
         """Update operation.
 
         Updates the record with the provided ID using the UpdateSchema schema.
         """
-        db_obj = self.get(db, obj_id)
+        db_obj = await self.get(db, obj_id)
 
         if not db_obj:
             raise exceptions.InvalidUserException()
 
-        validated_user = UserValidator().validate(db, input_object)
+        validated_user = await UserValidator().validate(db, input_object)
 
         # Password update
         if validated_user.get("password"):
@@ -138,17 +148,20 @@ class UserRepository(BaseRepository[User]):
 
         setattr(db_obj, "updated_at", update_datetime)
 
-        db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
-        return db_obj  # type: ignore
+        async with db() as session:
+            session.add(db_obj)
 
-    def delete(self, db: Session, obj_id: uuid.UUID) -> User | None:
+        async with db() as session:
+            db_obj = await session.merge(db_obj)
+
+        return db_obj
+
+    async def delete(self, db: AsyncDatabaseSession, obj_id: uuid.UUID) -> User | None:
         """Delete operation.
 
         Deletes the record with the provided ID.
         """
-        return super().delete(db, obj_id)  # type: ignore
+        return await super().delete(db, obj_id)  # type: ignore
 
 
 user_repository = UserRepository()

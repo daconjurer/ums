@@ -1,14 +1,10 @@
 from datetime import timedelta
 
-from fastapi.testclient import TestClient
-
 from tests.fixtures import (
+    async_session,  # noqa F401
     client,  # noqa F401
-    db,  # noqa F401
+    engine,  # noqa F401
     initialized_admin,  # noqa F401
-    initialized_groups,  # noqa F401
-    initialized_permissions,  # noqa F401
-    initialized_roles,  # noqa F401
     setup_and_teardown_db,  # noqa F401
 )
 from ums.core.security import create_access_token
@@ -20,7 +16,7 @@ class TestStatusRoute:
 
     def test_check_status_with_authorization(
         self,
-        client: TestClient,  # noqa F811
+        client,  # noqa F811
         initialized_admin,  # noqa F811
     ):
         # setup

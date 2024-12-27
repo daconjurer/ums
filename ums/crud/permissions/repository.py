@@ -2,9 +2,10 @@ from typing import Sequence, Type
 from uuid import UUID
 
 from pydantic import BaseModel
-from sqlmodel import Session, and_, select
+from sqlmodel import and_, select
 
 from ums.crud.base import BaseRepository, CreateSchema, UpdateSchema
+from ums.db.async_connection import AsyncDatabaseSession
 from ums.models import Permissions, RolePermissionLink
 
 
@@ -27,7 +28,9 @@ class PermissionsPublic(BaseModel):
 class PermissionsRepository(BaseRepository):
     model: Type[Permissions] = Permissions
 
-    def get_by_role_id(self, db: Session, role_id: UUID) -> Sequence[Permissions]:
+    async def get_by_role_id(
+        self, db: AsyncDatabaseSession, role_id: UUID
+    ) -> Sequence[Permissions]:
         """Get permissions by role."""
 
         statement = (
@@ -42,7 +45,10 @@ class PermissionsRepository(BaseRepository):
             # .join(RolePermissionLink, Permissions.id == RolePermissionLink.permission_id)
             # .filter(RolePermissionLink.role_id == role_id)
         )
-        result = db.scalars(statement).all()
+        async with db() as session:
+            result = await session.scalars(statement)
+            result = list(result.all())
+
         return result
 
 

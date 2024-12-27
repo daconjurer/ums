@@ -3,13 +3,11 @@ from datetime import timedelta
 from fastapi.testclient import TestClient
 
 from tests.fixtures import (
+    async_session,  # noqa F401
     client,  # noqa F401
-    db,  # noqa F401
-    initialized_admin,  # noqa F401
-    initialized_groups,  # noqa F401
+    engine,  # noqa F401
+    initialized_admin,  # noqa F401  # noqa F401
     initialized_maintainer,  # noqa F401
-    initialized_permissions,  # noqa F401
-    initialized_roles,  # noqa F401
     initialized_users,  # noqa F401
     setup_and_teardown_db,  # noqa F401
 )
@@ -35,7 +33,7 @@ class TestUserRoute:
 
     def test_read_users_with_authorization(
         self,
-        client: TestClient,  # noqa F811
+        client,  # noqa F811
         initialized_users,  # noqa F811
         initialized_admin,  # noqa F811
     ):
@@ -73,7 +71,7 @@ class TestUserRoute:
 
     def test_read_users_with_filtering(
         self,
-        client: TestClient,  # noqa F811
+        client,  # noqa F811
         initialized_users,  # noqa F811
         initialized_admin,  # noqa F811
     ):
@@ -108,7 +106,7 @@ class TestUserRoute:
 
     def test_read_users_with_sorting(
         self,
-        client: TestClient,  # noqa F811
+        client,  # noqa F811
         initialized_admin,  # noqa F811
     ):
         # setup
@@ -151,7 +149,7 @@ class TestUserRoute:
 
     def test_read_users_with_limit_and_pagination(
         self,
-        client: TestClient,  # noqa F811
+        client,  # noqa F811
         initialized_users,  # noqa F811
         initialized_admin,  # noqa F811
     ):
@@ -191,7 +189,7 @@ class TestUserRoute:
 
     def test_read_own_details_without_authorization(
         self,
-        client: TestClient,  # noqa F811
+        client,  # noqa F811
         initialized_users,  # noqa F811
     ):
         # setup
@@ -205,7 +203,8 @@ class TestUserRoute:
 
     def test_read_own_details_with_authorization(
         self,
-        client: TestClient,  # noqa F811
+        client,  # noqa F811
+        initialized_users,  # noqa F811
         initialized_maintainer,  # noqa F811
     ):
         # setup

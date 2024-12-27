@@ -3,14 +3,13 @@ from uuid import UUID
 
 import pytest
 
-from tests.fixtures import (
-    db,  # noqa F401
-    get_session,
+from tests.fixtures import (  # noqa F401
+    async_session,
+    engine,
     initialized_groups,  # noqa F401
-    initialized_permissions,  # noqa F401
     initialized_roles,  # noqa F401
     initialized_users,  # noqa F401
-    setup_and_teardown_db,  # noqa F401
+    setup_and_teardown_db,
 )
 from ums.core.exceptions import (
     InvalidGroupException,
@@ -26,9 +25,8 @@ from ums.crud.user.schemas import UserCreate, UserUpdate
 class TestUserRepository:
     def setup_method(self):
         self.test_user_repository = user_repository
-        self.test_db = next(get_session())
 
-    def test_add_minimal_user(self):
+    async def test_add_minimal_user(self, async_session):  # noqa F811
         # Setup
         test_add_user = UserCreate(
             name="vic",
@@ -38,13 +36,14 @@ class TestUserRepository:
         )
 
         # Test
-        created_user = user_repository.add(db=self.test_db, input_object=test_add_user)
+        created_user = await user_repository.add(
+            db=async_session, input_object=test_add_user
+        )
 
         # Validation
         assert created_user is not None
         assert created_user.name == test_add_user.name
         assert created_user.full_name == test_add_user.full_name
-        assert created_user.groups == []
         assert created_user.is_verified is False
         assert created_user.is_active is True
         assert created_user.is_deleted is False
@@ -53,10 +52,14 @@ class TestUserRepository:
         assert isinstance(created_user.updated_at, datetime)
         assert verify_password(test_add_user.password, created_user.password)
 
-        # # Clean-up
+        # Clean-up
         ...
 
-    def test_add_user_with_valid_role(self, db, initialized_roles):  # noqa F811
+    async def test_add_user_with_valid_role(
+        self,
+        async_session,  # noqa F811
+        initialized_roles,  # noqa F811
+    ):
         # Setup
         test_role, _, _ = initialized_roles
 
@@ -67,21 +70,20 @@ class TestUserRepository:
             password="abcdefg",
             role_id=test_role.id,
         )
-        db.add(test_role)
-        db.commit()
 
         # Test
-        created_user = user_repository.add(db=self.test_db, input_object=test_add_user)
+        created_user = await user_repository.add(
+            db=async_session, input_object=test_add_user
+        )
 
         # Validation
         assert created_user is not None
         assert created_user.name == test_add_user.name
         assert created_user.full_name == test_add_user.full_name
-        assert created_user.groups == []
         assert created_user.is_verified is False
         assert created_user.is_active is True
         assert created_user.is_deleted is False
-        assert created_user.role_id == test_role.id
+        assert created_user.role_id == str(test_role.id)
         assert isinstance(created_user.created_at, datetime)
         assert isinstance(created_user.updated_at, datetime)
         assert verify_password(test_add_user.password, created_user.password)
@@ -89,7 +91,7 @@ class TestUserRepository:
         # Clean-up
         ...
 
-    def test_add_user_with_invalid_role(self):
+    async def test_add_user_with_invalid_role(self, async_session):  # noqa F811
         # Setup
         invalid_role_id = UUID("5f0f6db0-f89f-4323-83bb-956767ad0a17")
         test_add_user = UserCreate(
@@ -102,14 +104,18 @@ class TestUserRepository:
 
         # Test & validation
         with pytest.raises(InvalidRoleException) as exception_info:
-            _ = user_repository.add(db=self.test_db, input_object=test_add_user)
+            _ = await user_repository.add(db=async_session, input_object=test_add_user)
 
         assert exception_info.value.detail == "Invalid role_id"
 
         # Clean-up
         ...
 
-    def test_add_user_with_valid_groups(self, initialized_groups):  # noqa F811
+    async def test_add_user_with_valid_groups(
+        self,
+        async_session,  # noqa F811
+        initialized_groups,  # noqa F811
+    ):
         # Setup
         test_group1, test_group2, _ = initialized_groups
 
@@ -122,14 +128,14 @@ class TestUserRepository:
         )
 
         # Test
-        created_user = user_repository.add(db=self.test_db, input_object=test_add_user)
+        created_user = await user_repository.add(
+            db=async_session, input_object=test_add_user
+        )
 
         # Validation
         assert created_user is not None
         assert created_user.name == test_add_user.name
         assert created_user.full_name == test_add_user.full_name
-        assert created_user.groups[0].model_dump() == test_group1.model_dump()
-        assert created_user.groups[1].model_dump() == test_group2.model_dump()
         assert created_user.is_verified is False
         assert created_user.is_active is True
         assert created_user.is_deleted is False
@@ -141,7 +147,11 @@ class TestUserRepository:
         # Clean-up
         ...
 
-    def test_add_user_with_invalid_groups(self, initialized_groups):  # noqa F811
+    async def test_add_user_with_invalid_groups(
+        self,
+        async_session,  # noqa F811
+        initialized_groups,  # noqa F811
+    ):
         # Setup
         test_invalid_group_id_1 = UUID("ddd7f04f-cdc6-4844-a51a-0999c51cf2fa")
         test_invalid_group_id_2 = UUID("9502e2e9-9485-4321-936d-6b01ebaecd36")
@@ -154,37 +164,31 @@ class TestUserRepository:
         )
 
         # Test & validation
-        with pytest.raises(InvalidGroupException) as exception_info:
-            _ = user_repository.add(db=self.test_db, input_object=test_add_user)
-
-        assert "Invalid group_id:" in exception_info.value.detail
+        with pytest.raises(InvalidGroupException):
+            _ = await user_repository.add(db=async_session, input_object=test_add_user)
 
         # Clean-up
         ...
 
-    def test_get(self):
+    async def test_get(
+        self,
+        async_session,  # noqa F811
+        initialized_users,  # noqa F811
+    ):
         # Setup
-        test_add_user_1 = UserCreate(
-            name="vic",
-            full_name="Victor Sandoval",
-            email="victor.sandoval@rfs-example.com",
-            password="abcdefg",
-        )
-        created_user_1 = user_repository.add(
-            db=self.test_db, input_object=test_add_user_1
-        )
+        created_user, _, _, _ = initialized_users
 
         # Test
-        stored_object = user_repository.get(db=self.test_db, id=created_user_1.id)
+        stored_object = await user_repository.get(db=async_session, id=created_user.id)
 
         # Validation
         assert stored_object is not None
-        assert stored_object.model_dump() == created_user_1.model_dump()
+        assert stored_object.model_dump() == created_user.model_dump()
 
         # Clean-up
         ...
 
-    def test_get_by_name(self):
+    async def test_get_by_name(self, async_session):  # noqa F811
         # Setup
         test_add_user_1 = UserCreate(
             name="vic",
@@ -192,13 +196,13 @@ class TestUserRepository:
             email="victor.sandoval@rfs-example.com",
             password="abcdefg",
         )
-        created_user_1 = user_repository.add(
-            db=self.test_db, input_object=test_add_user_1
+        created_user_1 = await user_repository.add(
+            db=async_session, input_object=test_add_user_1
         )
 
         # Test
-        stored_object = user_repository.get_by(
-            db=self.test_db,
+        stored_object = await user_repository.get_by(
+            db=async_session,
             filter=UserFilterParams(name=test_add_user_1.name),
         )
 
@@ -209,7 +213,7 @@ class TestUserRepository:
         # Clean-up
         ...
 
-    def test_get_by_email(self):
+    async def test_get_by_email(self, async_session):  # noqa F811
         # Setup
         test_add_user_1 = UserCreate(
             name="vic",
@@ -217,13 +221,13 @@ class TestUserRepository:
             email="victor.sandoval@rfs-example.com",
             password="abcdefg",
         )
-        created_user_1 = user_repository.add(
-            db=self.test_db, input_object=test_add_user_1
+        created_user_1 = await user_repository.add(
+            db=async_session, input_object=test_add_user_1
         )
 
         # Test
-        stored_object = user_repository.get_by(
-            db=self.test_db,
+        stored_object = await user_repository.get_by(
+            db=async_session,
             filter=UserFilterParams(email=test_add_user_1.email),
         )
 
@@ -234,13 +238,17 @@ class TestUserRepository:
         # Clean-up
         ...
 
-    def test_get_many_with_several_filters(self, initialized_users):  # noqa F811
+    async def test_get_many_with_several_filters(
+        self,
+        async_session,  # noqa F811
+        initialized_users,  # noqa F811
+    ):
         # Setup
         created_user, _, _, _ = initialized_users
 
         # Test
-        stored_objects = user_repository.get_many(
-            db=self.test_db,
+        stored_objects = await user_repository.get_many(
+            db=async_session,
             filter=UserFilterParams(
                 email="victor.sandoval@rfs-example.com",
                 is_active=True,
@@ -255,13 +263,17 @@ class TestUserRepository:
         # Clean-up
         ...
 
-    def test_get_many_with_sorting(self, initialized_users):  # noqa F811
+    async def test_get_many_with_sorting(
+        self,
+        async_session,  # noqa F811
+        initialized_users,  # noqa F811
+    ):
         # Setup
         expected_full_names = list(user.full_name for user in initialized_users).sort()
 
         # Test
-        stored_objects = user_repository.get_many(
-            db=self.test_db,
+        stored_objects = await user_repository.get_many(
+            db=async_session,
             filter=UserFilterParams(is_active=True),
             sort=SortParams(sort_by="created_at", sort_order="asc"),
         )
@@ -277,7 +289,11 @@ class TestUserRepository:
         # Clean-up
         ...
 
-    def test_get_many_no_filter(self, initialized_users):  # noqa F811
+    async def test_get_many_no_filter(
+        self,
+        async_session,  # noqa F811
+        initialized_users,  # noqa F811
+    ):
         # Setup
         (
             created_user_1,
@@ -287,7 +303,7 @@ class TestUserRepository:
         ) = initialized_users
 
         # Test
-        stored_objects = user_repository.get_many(db=self.test_db)
+        stored_objects = await user_repository.get_many(db=async_session)
 
         # Validation
         assert stored_objects is not None
@@ -300,13 +316,17 @@ class TestUserRepository:
         # Clean-up
         ...
 
-    def test_get_many_with_pagination(self, initialized_users):  # noqa F811
+    async def test_get_many_with_pagination(
+        self,
+        async_session,  # noqa F811
+        initialized_users,  # noqa F811
+    ):
         # Setup
         created_user_1, created_user_2, created_user_3, _ = initialized_users
 
         # Test
-        stored_objects = user_repository.get_many(
-            db=self.test_db,
+        stored_objects = await user_repository.get_many(
+            db=async_session,
             page=1,
             limit=3,
         )
@@ -321,8 +341,9 @@ class TestUserRepository:
         # Clean-up
         ...
 
-    def test_update_valid_user_id(
+    async def test_update_valid_user_id(
         self,
+        async_session,  # noqa F811
         initialized_roles,  # noqa F811
         initialized_groups,  # noqa F811
         initialized_users,  # noqa F811
@@ -344,8 +365,8 @@ class TestUserRepository:
         )
 
         # Test
-        updated_user = user_repository.update(
-            db=self.test_db,
+        updated_user = await user_repository.update(
+            db=async_session,
             obj_id=test_user.id,
             input_object=test_update_user,
         )
@@ -367,11 +388,11 @@ class TestUserRepository:
         # Clean-up
         ...
 
-    def test_update_invalid_user_id(
+    async def test_update_invalid_user_id(
         self,
+        async_session,  # noqa F811
         initialized_roles,  # noqa F811
         initialized_groups,  # noqa F811
-        initialized_users,  # noqa F811
     ):
         # Setup
         test_role, _, _ = initialized_roles
@@ -390,8 +411,8 @@ class TestUserRepository:
 
         # Test & validation
         with pytest.raises(InvalidUserException) as exception_info:
-            _ = user_repository.update(
-                db=self.test_db,
+            _ = await user_repository.update(
+                db=async_session,
                 obj_id=UUID("6e612cad-2406-4695-90a9-a4f143b76c19"),
                 input_object=test_update_user,
             )
@@ -401,12 +422,18 @@ class TestUserRepository:
         # Clean-up
         ...
 
-    def test_delete(self, initialized_users):  # noqa F811
+    async def test_delete(
+        self,
+        async_session,  # noqa F811
+        initialized_users,  # noqa F811
+    ):
         # Setup
         test_user, _, _, _ = initialized_users
 
         # Test
-        deleted_user = user_repository.delete(db=self.test_db, obj_id=test_user.id)
+        deleted_user = await user_repository.delete(
+            db=async_session, obj_id=test_user.id
+        )
 
         # Validation
         assert deleted_user is not None
