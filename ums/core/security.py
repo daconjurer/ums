@@ -1,7 +1,15 @@
+import sys
 from datetime import datetime, timedelta
 
 import bcrypt
 from jose import jwt
+
+if sys.version_info > (3, 11):
+    from datetime import UTC
+else:
+    from datetime import timezone
+
+    UTC = timezone.utc
 
 from ums.settings.application import get_app_settings
 
@@ -20,9 +28,9 @@ def get_password_hash(password: str):
 def create_access_token(data: dict, expire_delta: timedelta | None = None):
     to_encode = data.copy()
     if expire_delta:
-        expire = datetime.now() + expire_delta
+        expire = datetime.now(UTC) + expire_delta
     else:
-        expire = datetime.now() + timedelta(
+        expire = datetime.now(UTC) + timedelta(
             minutes=security_settings.access_token_expire_minutes
         )
 

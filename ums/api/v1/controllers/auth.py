@@ -71,7 +71,8 @@ async def get_current_user(
             raise credentials_exception
         token_scopes = payload.get("scopes", [])
         token_data = TokenData(scopes=token_scopes, name=name)
-    except (JWTError, ValidationError):
+    except (JWTError, ValidationError) as e:
+        logger.error(f"Error decoding or validating JWT: {e}")
         raise credentials_exception
 
     user = await user_controller.get_user_by_name(db=db, name=token_data.name)
