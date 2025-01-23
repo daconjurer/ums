@@ -14,7 +14,7 @@ async def create_permissions():
         result = await permissions_writer.create(
             session,
             Permissions(
-                id=uuid.UUID("4b65e643-ca72-44b8-a29b-6de42a70079c"),
+                id=uuid.UUID("201d8cdb-42f2-45ae-8283-bf62725826ac"),
                 name="users",
                 description="List all the users",
             ),
@@ -26,7 +26,7 @@ async def create_permissions():
 async def get_permissions():
     async with get_async_session() as session:
         permissions = await permissions_reader.get(
-            session, uuid.UUID("4b65e643-ca72-44b8-a29b-6de42a70079c")
+            session, uuid.UUID("201d8cdb-42f2-45ae-8283-bf62725826ac")
         )
         logger.info(permissions)
         await session.commit()
