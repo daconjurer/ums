@@ -39,16 +39,3 @@ class UserReader(GenericReader[User]):
 
 
 user_reader = UserReader()
-
-
-async def get_user():
-    async with get_async_session() as session:
-        user = await user_reader.get(
-            session, uuid.UUID("f18941a4-bb0e-444a-b6a0-a19509cc6089")
-        )
-        logger.info(user)
-        await session.commit()
-
-
-if __name__ == "__main__":
-    asyncio.run(get_user())
