@@ -2,8 +2,13 @@ import asyncio
 from uuid import UUID
 
 from ums.core.security import get_password_hash
-from ums.db.async_connection import DatabaseManager, get_async_session
-from ums.models import Group, Permissions, Role, User
+from ums.db.async_connection import DatabaseManager, create_custom_engine, get_async_session
+from ums.domain.entities import Group, Permissions, Role, User
+
+from ums.settings.application import get_app_settings
+
+db_settings = get_app_settings().db
+
 
 users_permission = Permissions(
     id=UUID("c0d6a4f1-bb1d-471f-ac5f-06c2691c0390"),
@@ -144,8 +149,9 @@ user_10 = User(
 
 
 async def init_db():
-    await DatabaseManager.drop_db()
-    await DatabaseManager.setup_db()
+    engine = create_custom_engine(str(db_settings.uri))
+    await DatabaseManager.drop_db(engine=engine)
+    await DatabaseManager.setup_db(engine=engine)
 
     async with get_async_session() as session:
         session.add_all([users_permission, me_permission, items_permission])
