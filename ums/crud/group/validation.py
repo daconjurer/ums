@@ -3,7 +3,7 @@ from sqlmodel import select
 from ums.core import exceptions
 from ums.crud.base import CreateSchema, UpdateSchema
 from ums.db.async_connection import AsyncDatabaseSession
-from ums.models import User
+from ums.domain.entities import User
 
 
 class GroupValidator:

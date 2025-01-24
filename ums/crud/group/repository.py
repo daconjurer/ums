@@ -26,7 +26,7 @@ from ums.crud.base import (
     UpdateSchema,
 )
 from ums.crud.group.validation import GroupValidator
-from ums.models import Group, User
+from ums.domain.entities import Group, User
 
 
 class GroupFilterParams(BaseFilterParams):

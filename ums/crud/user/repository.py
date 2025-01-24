@@ -29,7 +29,7 @@ from ums.crud.base import (
 from ums.crud.user.schemas import UserCreate
 from ums.crud.user.validation import UserValidator
 from ums.middlewares.filter_sort import SortOptions
-from ums.models import User
+from ums.domain.entities import User
 
 
 class UserFilterParams(BaseFilterParams):

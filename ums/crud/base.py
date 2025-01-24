@@ -23,7 +23,7 @@ from sqlmodel import SQLModel, select
 from ums.core.exceptions import UMSException
 from ums.db.async_connection import AsyncDatabaseSession
 from ums.middlewares.filter_sort import BaseFilterParams, SortParams
-from ums.models import Base
+from ums.domain.entities import Base
 
 ModelType = TypeVar("ModelType", bound=Base)
 

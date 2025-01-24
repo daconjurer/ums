@@ -3,11 +3,12 @@ from typing import Type
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ums.domain.data_access.interfaces import Entity, WriterInterface
+from ums.domain.data_access.interfaces import Entity, WriteInterface
 
 
-class GenericWriter(WriterInterface[Entity]):
+class GenericWriter(WriteInterface[Entity]):
     model: Type[Entity]
+    # validator: GenericValidator[Entity]
 
     async def create(
         self,

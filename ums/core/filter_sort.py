@@ -1,11 +1,14 @@
 from enum import Enum
-from typing import Literal
+from typing import Literal, Type
+from sqlmodel import SQLModel
 
 from pydantic import BaseModel
 
 # Filtering
 
 FilterType = str | int | bool
+FilterMap = dict[str, FilterType]
+SortMap = dict[str, str]
 
 
 class BaseFilterParams(BaseModel):
@@ -16,9 +19,15 @@ class BaseFilterParams(BaseModel):
     When subclassing, define the filter parameters as fields.
     """
 
-    def get_filters(self) -> dict[str, FilterType]:
-        return self.model_dump(exclude_none=True, exclude_unset=True)
+class FilterMapper:
+    def get_filters(self, params: BaseFilterParams) -> dict[str, FilterType]:
+        return params.model_dump(exclude_none=True, exclude_unset=True)
 
+    def get_map(self, params: BaseFilterParams, model: Type[SQLModel]) -> FilterMap:
+        return {
+            attr: getattr(model, attr)
+            for attr in params.model_fields.keys()
+        }
 
 # Sorting
 
@@ -38,5 +47,10 @@ class SortParams(BaseModel):
 class SortOptions(str, Enum):
     """When subclassing, define the available sorting options."""
 
-    ...
 
+class SortMapper:
+    def __init__(self, options: Type[SortOptions]):
+        self.sort_options = list(options.__members__.keys())
+
+    def get_map(self, model: Type[SQLModel]) -> SortMap:
+        return {attr: getattr(model, attr) for attr in self.sort_options}

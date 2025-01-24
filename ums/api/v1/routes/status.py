@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from ums.api.v1.controllers.auth import get_current_active_user
-from ums.models import User
+from ums.domain.entities import User
 
 router = APIRouter(tags=["status"])
 

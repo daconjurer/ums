@@ -29,7 +29,9 @@ class PermissionsRepository(BaseRepository):
     model: Type[Permissions] = Permissions
 
     async def get_by_role_id(
-        self, db: AsyncDatabaseSession, role_id: UUID
+        self,
+        db: AsyncDatabaseSession,
+        role_id: UUID,
     ) -> Sequence[Permissions]:
         """Get permissions by role."""
 

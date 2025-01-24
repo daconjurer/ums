@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from sqlmodel import SQLModel
 
 from ums.crud.base import BaseRepository, CreateSchema, UpdateSchema
-from ums.models import Permissions, Role
+from ums.domain.entities import Permissions, Role
 
 
 class RoleCreate(CreateSchema):

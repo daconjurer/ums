@@ -6,7 +6,7 @@ from sqlmodel import Field
 from tests.fixtures import async_session, engine, setup_and_teardown_db  # noqa F401
 from ums.core.exceptions import UMSException
 from ums.crud.base import BaseRepository, CreateSchema, UpdateSchema
-from ums.models import Base
+from ums.domain.entities import Base
 
 
 class DummyModel(Base, table=True):

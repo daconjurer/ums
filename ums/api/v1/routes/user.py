@@ -12,7 +12,7 @@ from ums.crud.user.repository import (
 )
 from ums.db.async_connection import AsyncDatabaseSession, db
 from ums.middlewares.filter_sort import parse_sorting
-from ums.models import User
+from ums.domain.entities import User
 
 router = APIRouter(tags=["user"])
 

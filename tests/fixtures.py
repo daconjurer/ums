@@ -10,7 +10,7 @@ from ums.db.async_connection import (
     create_custom_engine,
     get_async_session,
 )
-from ums.models import Group, Permissions, Role, User
+from ums.domain.entities import Group, Permissions, Role, User
 from ums.settings.application import get_app_settings
 
 db_settings = get_app_settings().db

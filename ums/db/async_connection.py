@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-from ums.models import Base
+from ums.domain.entities import Base
 from ums.settings.application import get_app_settings
 
 db_settings = get_app_settings().db

@@ -23,8 +23,8 @@ async def create_user():
                 groups=[],
             ),
         )
-        logger.info(result)
         await session.commit()
+        logger.info(result)
 
 
 async def get_user():

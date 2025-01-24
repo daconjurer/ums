@@ -6,7 +6,7 @@ from sqlmodel import and_, select
 
 from ums.crud.base import BaseRepository, CreateSchema, UpdateSchema
 from ums.db.async_connection import AsyncDatabaseSession
-from ums.models import Permissions, RolePermissionLink
+from ums.domain.entities import Permissions, RolePermissionLink
 
 
 class PermissionsCreate(CreateSchema):

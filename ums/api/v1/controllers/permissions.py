@@ -5,7 +5,7 @@ from fastapi import Depends
 
 from ums.crud.permissions.repository import permissions_repository
 from ums.db.async_connection import AsyncDatabaseSession, db
-from ums.models import Permissions
+from ums.domain.entities import Permissions
 
 
 async def get_permissions_by_role_id(
