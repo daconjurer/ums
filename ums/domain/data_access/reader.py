@@ -7,10 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ums.core.exceptions import UMSException
 from ums.core.filter_sort import BaseFilterParams, FilterMapper, SortMapper, SortParams
-from ums.domain.data_access.interfaces import Entity, ReadInterface
+from ums.domain.data_access.interfaces import Entity, IRead
 
 
-class GenericReader(ReadInterface[Entity]):
+class GenericReader(IRead[Entity]):
     model: Type[Entity]
     filter_mapper: FilterMapper | None = None
     sort_mapper: SortMapper | None = None

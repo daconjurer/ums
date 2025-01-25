@@ -3,10 +3,10 @@ from typing import Sequence
 
 from pydantic import EmailStr
 
-from ums.crud.base import CreateSchema, UpdateSchema
+from ums.domain.validation.interfaces import Schema
 
 
-class UserCreate(CreateSchema):
+class UserCreate(Schema):
     name: str
     full_name: str
     email: EmailStr
@@ -15,7 +15,7 @@ class UserCreate(CreateSchema):
     groups_ids: Sequence[uuid.UUID] | None = None
 
 
-class UserUpdate(UpdateSchema):
+class UserUpdate(Schema):
     name: str | None = None
     full_name: str | None = None
     email: EmailStr | None = None
