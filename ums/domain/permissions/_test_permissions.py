@@ -11,7 +11,7 @@ from ums.domain.permissions.writer import permissions_writer
 
 async def create_permissions():
     async with get_async_session() as session:
-        result = await permissions_writer.create(
+        result = await permissions_writer.upsert(
             session,
             Permissions(
                 id=uuid.UUID("201d8cdb-42f2-45ae-8283-bf62725826ac"),
