@@ -2,33 +2,34 @@ import uuid
 from typing import Type
 
 from loguru import logger
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import column, select
 
 from ums.core.exceptions import UMSException
-from ums.core.filter_sort import BaseFilterParams, FilterMapper, SortMapper, SortParams
+from ums.core.filter_sort import BaseFilterParams, SortParams
+from ums.db.async_session import AsyncSessionStream
 from ums.domain.data_access.interfaces import Entity, IRead
 
 
 class GenericReader(IRead[Entity]):
     model: Type[Entity]
-    filter_mapper: FilterMapper | None = None
-    sort_mapper: SortMapper | None = None
 
     async def get(
         self,
-        db: AsyncSession,
+        db: AsyncSessionStream,
         id: uuid.UUID,
     ) -> Entity | None:
         logger.info(f"Getting {self.model.__name__} by ID: {id}")
 
-        statement = select(self.model).where(self.model.id == id)
-        result = await db.scalar(statement)
+        statement = select(self.model).where(column("id") == id)
+
+        async with db() as session:
+            result = await session.scalar(statement)
+
         return result
 
     async def get_by(
         self,
-        db: AsyncSession,
+        db: AsyncSessionStream,
         filter: BaseFilterParams,
     ) -> Entity | None:
         """Read operation.
@@ -38,7 +39,7 @@ class GenericReader(IRead[Entity]):
 
         logger.info(f"Getting one {self.model.__name__} by filter {filter}")
 
-        filters = self.filter_mapper.get_filters(filter)
+        filters = filter.get_filters()
 
         if len(filters) > 1:
             raise UMSException(
@@ -47,18 +48,16 @@ class GenericReader(IRead[Entity]):
             )
 
         for key, value in filters.items():
-            filter_field = self.filter_mapper.get_map(filter, self.model).get(key)
+            statement = select(self.model).where(column(key) == value)
 
-            if filter_field:
-                statement = select(self.model).where(filter_field == value)
+        async with db() as session:
+            result = await session.scalar(statement)
 
-                return await db.scalar(statement)
-
-        return None
+        return result
 
     async def get_many(
         self,
-        db: AsyncSession,
+        db: AsyncSessionStream,
         filter: BaseFilterParams | None = None,
         sort: SortParams | None = None,
         limit: int | None = 5,
@@ -74,25 +73,19 @@ class GenericReader(IRead[Entity]):
 
         statement = select(self.model)
 
-        if filter and self.filter_mapper:
-            filters = self.filter_mapper.get_filters(filter)
+        if filter:
+            filters = filter.get_filters()
 
             for key, value in filters.items():
-                filter_field = self.filter_mapper.get_map(filter, self.model).get(key)
-                if filter_field:
-                    statement = statement.where(filter_field == value)
+                statement = statement.where(column(key) == value)
 
         # Apply sorting
-        if sort and self.sort_mapper:
-            column_to_sort = self.sort_mapper.get_map(self.model).get(
-                sort.sort_by, None
+        if sort:
+            statement = statement.order_by(
+                column(sort.sort_by).asc()
+                if sort.sort_order == "asc"
+                else column(sort.sort_by).desc()
             )
-            if column_to_sort:
-                statement = statement.order_by(
-                    column_to_sort.asc()
-                    if sort.sort_order == "asc"
-                    else column_to_sort.desc()
-                )
 
         # Apply pagination
         if page is not None and limit is not None:
@@ -103,7 +96,8 @@ class GenericReader(IRead[Entity]):
         # Query
         logger.debug(statement.compile(compile_kwargs={"literal_binds": True}))
 
-        result = await db.scalars(statement)
-        result = list(result.all())
+        async with db() as session:
+            entities = await session.scalars(statement)
+            result = list(entities.all())
 
         return result

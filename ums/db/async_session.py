@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from asyncio import current_task
 from contextlib import asynccontextmanager
-from typing import AsyncIterator, Callable
+from typing import AsyncIterator, Callable, Protocol, AsyncContextManager
 
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -103,6 +103,27 @@ db_connection = AsyncDatabaseConnection(
     engine=create_custom_engine(str(db_settings.uri))
 )
 
+class AsyncSessionProvider(Protocol):
+    """Protocol for async session providers."""
+
+    def get_session(
+        self, 
+        current_request: Callable
+    ) -> async_scoped_session[AsyncSession]:
+        ...
+
+    async def close_engine(self) -> None:
+        ...
+
+class AsyncSessionStream(Protocol):
+    """Protocol for the get_async_session context manager."""
+
+    def __call__(
+        self,
+        connection: AsyncDatabaseConnection = db_connection,
+        current_request: Callable = current_task,
+    ) -> AsyncContextManager[async_scoped_session[AsyncSession]]:
+        ...
 
 @asynccontextmanager
 async def get_async_session(
@@ -120,12 +141,12 @@ async def get_async_session(
         await connection.close_engine()
 
 
-class AsyncDatabaseSession:
+class AsyncSessionStreamProvider:
     def __init__(self):
-        self.db_session = get_async_session
+        self.session_stream: AsyncSessionStream = get_async_session
 
     def __call__(self):
-        return self.db_session
+        return self.session_stream
 
 
-db = AsyncDatabaseSession()
+db = AsyncSessionStreamProvider()

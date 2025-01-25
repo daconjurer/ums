@@ -1,9 +1,11 @@
 import uuid
 from typing import Protocol, TypeVar
 
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ums.core.filter_sort import BaseFilterParams, SortParams
+from ums.db.async_session import AsyncSessionStream
 from ums.domain.entities import Base
 
 Entity = TypeVar("Entity", bound=Base)
@@ -14,21 +16,21 @@ class IRead(Protocol[Entity]):
 
     async def get(
         self,
-        db: AsyncSession,
+        db: AsyncSessionStream,
         id: uuid.UUID,
     ) -> Entity | None:
         ...
 
     async def get_by(
         self,
-        db: AsyncSession,
+        db: AsyncSessionStream,
         filter: BaseFilterParams,
     ) -> Entity | None:
         ...
 
     async def get_many(
         self,
-        db: AsyncSession,
+        db: AsyncSessionStream,
         filter: BaseFilterParams | None = None,
         sort: SortParams | None = None,
         limit: int | None = 5,
@@ -42,21 +44,25 @@ class IWrite(Protocol[Entity]):
 
     async def create(
         self,
-        db: AsyncSession,
+        session: AsyncSession,
         entity: Entity,
     ) -> Entity:
         ...
 
     # async def update(
     #     self,
-    #     db: AsyncSession,
+    #     session: AsyncSession,
     #     data: Entity,
     # ) -> Entity:
     #     ...
 
     # async def delete(
     #     self,
-    #     db: AsyncSession,
+    #     session: AsyncSession,
     #     id: uuid.UUID,
     # ) -> None:
     #     ...
+
+
+class Schema(BaseModel):
+    ...

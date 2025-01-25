@@ -1,6 +1,6 @@
 from pydantic import Field
 
-from ums.core.filter_sort import BaseFilterParams, FilterMapper, SortMapper, SortOptions
+from ums.core.filter_sort import BaseFilterParams, SortOptions
 from ums.domain.data_access.reader import GenericReader
 from ums.domain.entities import User
 
@@ -41,8 +41,6 @@ class UserSortOptions(SortOptions):
 
 class UserReader(GenericReader[User]):
     model = User
-    filter_mapper = FilterMapper()
-    sort_mapper = SortMapper(UserSortOptions)
 
 
 user_reader = UserReader()

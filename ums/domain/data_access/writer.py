@@ -11,10 +11,10 @@ class GenericWriter(IWrite[Entity]):
 
     async def create(
         self,
-        db: AsyncSession,
+        session: AsyncSession,
         entity: Entity,
     ) -> Entity:
         logger.info(f"Creating {self.model.__name__}")
 
-        db.add(entity)
+        session.add(entity)
         return entity

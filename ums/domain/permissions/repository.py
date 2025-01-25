@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from sqlmodel import and_, select
 
 from ums.crud.base import BaseRepository, CreateSchema, UpdateSchema
-from ums.db.async_connection import AsyncDatabaseSession
+from ums.db.async_session import AsyncSessionStream
 from ums.domain.entities import Permissions, RolePermissionLink
 
 
@@ -30,7 +30,7 @@ class PermissionsRepository(BaseRepository):
 
     async def get_by_role_id(
         self,
-        db: AsyncDatabaseSession,
+        db: AsyncSessionStream,
         role_id: UUID,
     ) -> Sequence[Permissions]:
         """Get permissions by role."""
@@ -48,8 +48,8 @@ class PermissionsRepository(BaseRepository):
             # .filter(RolePermissionLink.role_id == role_id)
         )
         async with db() as session:
-            result = await session.scalars(statement)
-            result = list(result.all())
+            entities = await session.scalars(statement)
+            result = list(entities.all())
 
         return result
 
