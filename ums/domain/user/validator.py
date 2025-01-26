@@ -53,6 +53,9 @@ class UserValidator:
                 ]
 
         # Assign groups
-        valid_user = User(**input.model_dump(), groups=user_groups)
+        valid_user = User(
+            **input.model_dump(exclude_none=True, exclude_unset=True),
+            groups=user_groups,
+        )
 
         return valid_user

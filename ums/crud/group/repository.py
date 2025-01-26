@@ -17,7 +17,7 @@ else:
 
     UTC = timezone.utc
 
-from ums.core import exceptions
+from ums.api import exceptions
 from ums.crud.base import (
     BaseFilterParams,
     BaseRepository,

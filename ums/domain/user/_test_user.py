@@ -41,6 +41,9 @@ async def update_user(db: AsyncSessionStream):
         uuid.UUID("4b65e643-ca72-44b8-a29b-6de42a70079c"),
     )
 
+    if not user:
+        raise ValueError("User not found")
+
     user.name = "UpdatedUser"
 
     async with db() as session:
@@ -57,6 +60,9 @@ async def delete_user(db: AsyncSessionStream):
         db,
         uuid.UUID("4b65e643-ca72-44b8-a29b-6de42a70079c"),
     )
+
+    if not user:
+        raise ValueError("User not found")
 
     async with db() as session:
         await user_writer.delete(

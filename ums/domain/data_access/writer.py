@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Type
 
 from loguru import logger
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session
 
 from ums.domain.data_access.interfaces import Entity, IWrite
 
@@ -20,7 +20,7 @@ class GenericWriter(IWrite[Entity]):
 
     async def upsert(
         self,
-        session: AsyncSession,
+        session: async_scoped_session[AsyncSession],
         entity: Entity,
     ) -> Entity:
         logger.info(f"Creating {self.model.__name__}")
@@ -30,7 +30,7 @@ class GenericWriter(IWrite[Entity]):
 
     async def delete(
         self,
-        session: AsyncSession,
+        session: async_scoped_session[AsyncSession],
         entity: Entity,
     ) -> Entity:
         logger.info(f"Deleting {self.model.__name__}")

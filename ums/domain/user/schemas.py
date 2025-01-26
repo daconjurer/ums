@@ -16,6 +16,7 @@ class UserCreate(Schema):
 
 
 class UserUpdate(Schema):
+    id: uuid.UUID
     name: str | None = None
     full_name: str | None = None
     email: EmailStr | None = None

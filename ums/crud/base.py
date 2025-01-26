@@ -20,7 +20,7 @@ else:
 from fastapi.encoders import jsonable_encoder
 from sqlmodel import SQLModel, select
 
-from ums.core.exceptions import UMSException
+from ums.api.exceptions import UMSException
 from ums.db.async_connection import AsyncDatabaseSession
 from ums.middlewares.filter_sort import BaseFilterParams, SortParams
 from ums.domain.entities import Base

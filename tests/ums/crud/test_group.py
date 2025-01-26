@@ -11,7 +11,7 @@ from tests.original_fixtures import (  # noqa F401
     initialized_users,  # noqa F401
     setup_and_teardown_db,
 )
-from ums.core.exceptions import InvalidGroupException, InvalidUserException
+from ums.api.exceptions import InvalidGroupException, InvalidUserException
 from ums.crud.base import SortParams
 from ums.crud.group.repository import GroupFilterParams, group_repository
 from ums.crud.group.schemas import GroupCreate, GroupUpdate

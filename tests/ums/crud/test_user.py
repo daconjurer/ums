@@ -11,7 +11,7 @@ from tests.original_fixtures import (  # noqa F401
     initialized_users,  # noqa F401
     setup_and_teardown_db,
 )
-from ums.core.exceptions import (
+from ums.api.exceptions import (
     InvalidGroupException,
     InvalidRoleException,
     InvalidUserException,

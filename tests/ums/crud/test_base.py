@@ -8,7 +8,7 @@ from tests.original_fixtures import (  # noqa F401
     engine,
     setup_and_teardown_db,
 )
-from ums.core.exceptions import UMSException
+from ums.api.exceptions import UMSException
 from ums.crud.base import BaseRepository, CreateSchema, UpdateSchema
 from ums.domain.entities import Base
 

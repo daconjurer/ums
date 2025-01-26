@@ -2,7 +2,7 @@ import uuid
 from typing import Protocol, TypeVar
 
 from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session
 
 from ums.core.filter_sort import BaseFilterParams, SortParams
 from ums.db.async_session import AsyncSessionStream
@@ -19,14 +19,14 @@ class IRead(Protocol[Entity]):
         db: AsyncSessionStream,
         id: uuid.UUID,
     ) -> Entity | None:
-        ...
+        """Get an entity by its ID."""
 
     async def get_by(
         self,
         db: AsyncSessionStream,
         filter: BaseFilterParams,
     ) -> Entity | None:
-        ...
+        """Get an entity using a key-value filter."""
 
     async def get_many(
         self,
@@ -36,7 +36,7 @@ class IRead(Protocol[Entity]):
         limit: int | None = 5,
         page: int | None = 1,
     ) -> list[Entity]:
-        ...
+        """Get many entities."""
 
 
 class IWrite(Protocol[Entity]):
@@ -44,17 +44,17 @@ class IWrite(Protocol[Entity]):
 
     async def upsert(
         self,
-        session: AsyncSession,
+        session: async_scoped_session[AsyncSession],
         entity: Entity,
     ) -> Entity:
-        ...
+        """Upsert an entity."""
 
     async def delete(
         self,
-        session: AsyncSession,
+        session: async_scoped_session[AsyncSession],
         entity: Entity,
     ) -> Entity:
-        ...
+        """Delete an entity."""
 
 
 class Schema(BaseModel):

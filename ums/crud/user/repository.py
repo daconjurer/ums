@@ -17,7 +17,7 @@ else:
 
     UTC = timezone.utc
 
-from ums.core import exceptions
+from ums.api import exceptions
 from ums.core.security import get_password_hash
 from ums.crud.base import (
     BaseFilterParams,
