@@ -3,7 +3,11 @@ import uuid
 import pytest
 from sqlmodel import Field
 
-from tests.fixtures import async_session, engine, setup_and_teardown_db  # noqa F401
+from tests.original_fixtures import (  # noqa F401
+    async_session,
+    engine,
+    setup_and_teardown_db,
+)
 from ums.core.exceptions import UMSException
 from ums.crud.base import BaseRepository, CreateSchema, UpdateSchema
 from ums.domain.entities import Base

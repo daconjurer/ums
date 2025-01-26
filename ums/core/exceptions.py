@@ -2,6 +2,11 @@ from typing import Any, Dict, Optional
 
 from fastapi import HTTPException, status
 
+
+class CoreException(Exception):
+    ...
+
+
 # HTTP exceptions (meant to stop execution on the spot)
 
 

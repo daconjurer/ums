@@ -3,7 +3,7 @@ from uuid import UUID
 
 import pytest
 
-from tests.fixtures import (  # noqa F401
+from tests.original_fixtures import (  # noqa F401
     async_session,
     engine,
     initialized_groups,  # noqa F401

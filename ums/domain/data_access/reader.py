@@ -4,7 +4,7 @@ from typing import Type
 from loguru import logger
 from sqlalchemy import column, select
 
-from ums.core.exceptions import UMSException
+from ums.core.exceptions import CoreException
 from ums.core.filter_sort import BaseFilterParams, SortParams
 from ums.db.async_session import AsyncSessionStream
 from ums.domain.data_access.interfaces import Entity, IRead
@@ -42,10 +42,7 @@ class GenericReader(IRead[Entity]):
         filters = filter.get_filters()
 
         if len(filters) > 1:
-            raise UMSException(
-                status_code=400,
-                detail="Only one filter is allowed for this operation.",
-            )
+            raise CoreException("Only one filter is allowed for this operation.")
 
         for key, value in filters.items():
             statement = select(self.model).where(column(key) == value)
@@ -98,6 +95,7 @@ class GenericReader(IRead[Entity]):
 
         async with db() as session:
             entities = await session.scalars(statement)
+            await session.commit()
             result = list(entities.all())
 
         return result
