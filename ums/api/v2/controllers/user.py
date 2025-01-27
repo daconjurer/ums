@@ -2,8 +2,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr
 
-from ums.crud.user.repository import User, UserFilterParams, user_repository
-from ums.db.async_connection import AsyncDatabaseSession
+from ums.db.async_session import AsyncSessionStream
+from ums.domain.user.reader import User, UserFilterParams, user_reader
 
 
 class UserPublic(BaseModel):
@@ -23,17 +23,23 @@ def get_user_public_info(user) -> UserPublic:
     return public_user_info
 
 
-async def get_user_by_name(name: str, db: AsyncDatabaseSession) -> User | None:
-    user = await user_repository.get_by(
+async def get_user_by_name(
+    name: str,
+    db: AsyncSessionStream,
+) -> User | None:
+    user = await user_reader.get_by(
         db=db,
         filter=UserFilterParams(name=name),
     )
     return user
 
 
-async def get_user_role_id(name: str, db: AsyncDatabaseSession) -> UUID | None:
+async def get_user_role_id(
+    name: str,
+    db: AsyncSessionStream,
+) -> UUID | None:
     """Get the role_id of a user."""
-    user = await user_repository.get_by(
+    user = await user_reader.get_by(
         db=db,
         filter=UserFilterParams(name=name),
     )

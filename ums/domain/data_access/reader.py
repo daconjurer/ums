@@ -24,6 +24,7 @@ class GenericReader(IRead[Entity]):
 
         async with db() as session:
             result = await session.scalar(statement)
+            await session.commit()
 
         return result
 
@@ -49,6 +50,7 @@ class GenericReader(IRead[Entity]):
 
         async with db() as session:
             result = await session.scalar(statement)
+            await session.commit()
 
         return result
 

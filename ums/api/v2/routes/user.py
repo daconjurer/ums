@@ -2,17 +2,17 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, Security
 
-from ums.api.v1.controllers import user
-from ums.api.v1.controllers.auth import get_current_active_user
-from ums.crud.user.repository import (
-    SortParams,
+from ums.api.v2.controllers import user
+from ums.api.v2.controllers.auth import get_current_active_user
+from ums.core.filter_sort import SortParams
+from ums.db.async_session import AsyncSessionStream, db
+from ums.domain.user.reader import (
+    User,
     UserFilterParams,
     UserSortOptions,
-    user_repository,
+    user_reader,
 )
-from ums.db.async_connection import AsyncDatabaseSession, db
 from ums.middlewares.filter_sort import parse_sorting
-from ums.domain.entities import User
 
 router = APIRouter(tags=["user"])
 
@@ -20,7 +20,7 @@ router = APIRouter(tags=["user"])
 @router.get("/users")
 async def read_users(
     current_user: Annotated[User, Security(get_current_active_user, scopes=["users"])],
-    db: Annotated[AsyncDatabaseSession, Depends(db)],
+    db: Annotated[AsyncSessionStream, Depends(db)],
     filter: Annotated[UserFilterParams, Depends()],
     sort: Annotated[SortParams, Depends(parse_sorting(UserSortOptions))],
     limit: int = Query(10, ge=1, le=50),
@@ -28,7 +28,7 @@ async def read_users(
 ) -> list[user.UserPublic]:
     users_public_info = []
 
-    users_info = await user_repository.get_many(
+    users_info = await user_reader.get_many(
         db=db,
         filter=filter,
         sort=sort,

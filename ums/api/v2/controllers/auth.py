@@ -8,10 +8,10 @@ from jose import JWTError, jwt
 from loguru import logger
 from pydantic import BaseModel, ValidationError
 
-from ums.api.v1.controllers import user as user_controller
+from ums.api.v2.controllers import user as user_controller
 from ums.core import exceptions
 from ums.core.security import verify_password
-from ums.db.async_connection import AsyncDatabaseSession, db
+from ums.db.async_session import AsyncSessionStream, db
 from ums.domain.entities import User
 from ums.settings.application import get_app_settings
 
@@ -34,7 +34,7 @@ class TokenData(BaseModel):
     scopes: list[str] = []
 
 
-async def authenticate_user(db: AsyncDatabaseSession, name: str, password: str) -> User:
+async def authenticate_user(db: AsyncSessionStream, name: str, password: str) -> User:
     user = await user_controller.get_user_by_name(db=db, name=name)
     if not user:
         raise exceptions.AuthenticationException("User not found")
@@ -46,7 +46,7 @@ async def authenticate_user(db: AsyncDatabaseSession, name: str, password: str) 
 async def get_current_user(
     security_scopes: SecurityScopes,
     token: Annotated[str, Depends(oauth2_scheme)],
-    db: Annotated[AsyncDatabaseSession, Depends(db)],
+    db: Annotated[AsyncSessionStream, Depends(db)],
 ):
     if security_scopes.scopes:
         authenticate_value = f'Bearer scope="{security_scopes.scope_str}"'
@@ -75,7 +75,7 @@ async def get_current_user(
         logger.error(f"Error decoding or validating JWT: {e}")
         raise credentials_exception
 
-    user = await authenticate_user(db=db, name=token_data.name)
+    user = await user_controller.get_user_by_name(db=db, name=token_data.name)
 
     for scope in security_scopes.scopes:
         if scope not in token_data.scopes:

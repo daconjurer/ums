@@ -1,36 +1,15 @@
-from typing import Sequence, Type
+from typing import Sequence
 from uuid import UUID
 
-from pydantic import BaseModel
 from sqlmodel import and_, select
 
-from ums.crud.base import BaseRepository, CreateSchema, UpdateSchema
-from ums.db.async_session import AsyncSessionStream
 from ums.domain.entities import Permissions, RolePermissionLink
+from ums.domain.service.interfaces import DomainService
 
 
-class PermissionsCreate(CreateSchema):
-    name: str
-    description: str | None
-
-
-class PermissionsUpdate(UpdateSchema):
-    name: str
-    description: str | None
-    is_active: bool | None
-
-
-class PermissionsPublic(BaseModel):
-    name: str
-    description: str | None
-
-
-class PermissionsRepository(BaseRepository):
-    model: Type[Permissions] = Permissions
-
+class PermissionsService(DomainService[Permissions]):
     async def get_by_role_id(
         self,
-        db: AsyncSessionStream,
         role_id: UUID,
     ) -> Sequence[Permissions]:
         """Get permissions by role."""
@@ -47,11 +26,8 @@ class PermissionsRepository(BaseRepository):
             # .join(RolePermissionLink, Permissions.id == RolePermissionLink.permission_id)
             # .filter(RolePermissionLink.role_id == role_id)
         )
-        async with db() as session:
+        async with self.db() as session:
             entities = await session.scalars(statement)
             result = list(entities.all())
 
         return result
-
-
-permissions_repository = PermissionsRepository()

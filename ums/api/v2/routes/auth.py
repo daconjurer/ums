@@ -6,11 +6,11 @@ from fastapi.security import OAuth2PasswordRequestForm
 from loguru import logger
 from pydantic import BaseModel
 
-from ums.api.v1.controllers import permissions as permissions_controller
-from ums.api.v1.controllers.auth import authenticate_user
+from ums.api.v2.controllers.auth import authenticate_user
 from ums.core.exceptions import AuthenticationException
 from ums.core.security import create_access_token
-from ums.db.async_connection import AsyncDatabaseSession, db
+from ums.db.async_session import AsyncSessionStream, db
+from ums.domain.permissions.service import PermissionsService
 from ums.settings.application import get_app_settings
 
 security_settings = get_app_settings().security
@@ -25,7 +25,7 @@ class Token(BaseModel):
 
 @router.post("/login")
 async def login_for_access_token(
-    db: Annotated[AsyncDatabaseSession, Depends(db)],
+    db: Annotated[AsyncSessionStream, Depends(db)],
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ) -> Token:
     try:
@@ -51,8 +51,7 @@ async def login_for_access_token(
         )
 
     # Get the permissions for that role
-    user_permissions = await permissions_controller.get_permissions_by_role_id(
-        db=db,
+    user_permissions = await PermissionsService().get_by_role_id(
         role_id=user.role_id,
     )
 

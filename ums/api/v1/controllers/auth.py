@@ -75,7 +75,7 @@ async def get_current_user(
         logger.error(f"Error decoding or validating JWT: {e}")
         raise credentials_exception
 
-    user = await authenticate_user(db=db, name=token_data.name)
+    user = await user_controller.get_user_by_name(db=db, name=token_data.name)
 
     for scope in security_scopes.scopes:
         if scope not in token_data.scopes:
