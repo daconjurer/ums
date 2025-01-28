@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlmodel import and_, select
 
 from ums.domain.entities import Permissions, RolePermissionLink
-from ums.domain.service.interfaces import DomainService
+from ums.domain.service.domain import DomainService
 
 
 class PermissionsService(DomainService[Permissions]):

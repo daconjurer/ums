@@ -25,3 +25,10 @@ class UserUpdate(Schema):
     groups_ids: Sequence[uuid.UUID] | None = None
     is_active: bool | None = None
     is_verified: bool | None = None
+
+
+class UserPublic(Schema):
+    name: str
+    full_name: str | None
+    email: EmailStr
+    is_verified: bool

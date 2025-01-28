@@ -1,6 +1,6 @@
 from pydantic import Field
 
-from ums.core.filter_sort import BaseFilterParams, SortOptions
+from ums.core.filter_sort import BaseFilterParams
 from ums.domain.data_access.reader import GenericReader
 from ums.domain.entities import User
 
@@ -31,12 +31,6 @@ class UserFilterParams(BaseFilterParams):
         examples=None,
         description="Whether the user is verified",
     )
-
-
-class UserSortOptions(SortOptions):
-    full_name = "full_name"
-    created_at = "created_at"
-    updated_at = "updated_at"
 
 
 class UserReader(GenericReader[User]):

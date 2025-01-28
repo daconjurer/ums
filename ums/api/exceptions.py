@@ -2,7 +2,6 @@ from typing import Any, Dict, Optional
 
 from fastapi import HTTPException, status
 
-
 # HTTP exceptions (meant to stop execution on the spot)
 
 

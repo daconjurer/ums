@@ -11,8 +11,8 @@ from ums.crud.user.repository import (
     user_repository,
 )
 from ums.db.async_connection import AsyncDatabaseSession, db
-from ums.middlewares.filter_sort import parse_sorting
 from ums.domain.entities import User
+from ums.middlewares.filter_sort import parse_sorting
 
 router = APIRouter(tags=["user"])
 

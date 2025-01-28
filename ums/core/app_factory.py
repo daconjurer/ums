@@ -2,9 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from ums import __version__
-from ums.api.v2.routes.auth import router as auth_router
-from ums.api.v2.routes.status import router as status_router
-from ums.api.v2.routes.user import router as user_router
+from ums.api.v2.controllers.auth import router as auth_router
+from ums.api.v2.controllers.status import router as status_router
+from ums.api.v2.controllers.user import router as user_router
 from ums.settings.application import get_app_settings
 
 settings = get_app_settings()

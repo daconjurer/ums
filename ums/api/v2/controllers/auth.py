@@ -1,100 +1,61 @@
-from __future__ import annotations
-
+from datetime import timedelta
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, SecurityScopes
-from jose import JWTError, jwt
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from loguru import logger
-from pydantic import BaseModel, ValidationError
 
-from ums.api.v2.controllers import user as user_controller
-from ums.core import exceptions
-from ums.core.security import verify_password
-from ums.db.async_session import AsyncSessionStream, db
-from ums.domain.entities import User
+from ums.api.auth import Token, authenticate_user
+from ums.core.exceptions import AuthenticationException
+from ums.core.security import create_access_token
+from ums.domain.permissions.service import PermissionsService
 from ums.settings.application import get_app_settings
 
 security_settings = get_app_settings().security
 
-
-# It checks that the Authorization header in a request contains a JWT token
-oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="login",
-    scopes={
-        "me": "Read information about the current user.",
-        "items": "Read items.",
-        "users": "Read users.",
-    },
-)
+router = APIRouter(tags=["auth"])
 
 
-class TokenData(BaseModel):
-    name: str
-    scopes: list[str] = []
+@router.post("/login")
+async def login_for_access_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+) -> Token:
+    try:
+        user = await authenticate_user(form_data.username, form_data.password)
+    except AuthenticationException as e:
+        logger.warning(f"Authentication failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Incorrect name or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
-
-async def authenticate_user(db: AsyncSessionStream, name: str, password: str) -> User:
-    user = await user_controller.get_user_by_name(db=db, name=name)
-    if not user:
-        raise exceptions.AuthenticationException("User not found")
-    if not verify_password(password, user.password):
-        raise exceptions.AuthenticationException("Incorrect password")
-    return user
-
-
-async def get_current_user(
-    security_scopes: SecurityScopes,
-    token: Annotated[str, Depends(oauth2_scheme)],
-    db: Annotated[AsyncSessionStream, Depends(db)],
-):
-    if security_scopes.scopes:
-        authenticate_value = f'Bearer scope="{security_scopes.scope_str}"'
-    else:
-        authenticate_value = "Bearer"
-
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": authenticate_value},
+    access_token_expires = timedelta(
+        minutes=security_settings.access_token_expire_minutes
     )
 
-    try:
-        payload = jwt.decode(
-            token,
-            security_settings.secret_key,
-            algorithms=[security_settings.hashing_algorithm],
-        )
-        name: str | None = payload.get("sub")
-
-        if not name:
-            raise credentials_exception
-        token_scopes = payload.get("scopes", [])
-        token_data = TokenData(scopes=token_scopes, name=name)
-    except (JWTError, ValidationError) as e:
-        logger.error(f"Error decoding or validating JWT: {e}")
-        raise credentials_exception
-
-    user = await user_controller.get_user_by_name(db=db, name=token_data.name)
-
-    for scope in security_scopes.scopes:
-        if scope not in token_data.scopes:
-            logger.warning(f"User {name} does not have enough permissions.")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Not enough permissions",
-                headers={"WWW-Authenticate": authenticate_value},
-            )
-
-    return user
-
-
-async def get_current_active_user(
-    current_user: Annotated[User, Depends(get_current_user)],
-):
-    if not current_user.is_active:
+    # Check the role of the user
+    if not user.role_id:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User has no role assigned.",
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
-    return current_user
+    # Get the permissions for that role
+    user_permissions = await PermissionsService().get_by_role_id(
+        role_id=user.role_id,
+    )
+
+    user_scopes = [user_permission.name for user_permission in user_permissions]
+    # Enable the two lines below for API/auth debugging
+    # user_scopes = form_data.scopes
+    # logger.debug(f"user_scopes: {user_scopes}")
+
+    access_token = create_access_token(
+        data={"sub": user.name, "scopes": user_scopes},
+        expire_delta=access_token_expires,
+    )
+
+    logger.info(f"User {user.name} successfully logged in.")
+    return Token(access_token=access_token, token_type="bearer")
