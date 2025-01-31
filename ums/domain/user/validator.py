@@ -1,4 +1,4 @@
-from sqlmodel import select
+from sqlmodel import column, select
 
 from ums.core import exceptions
 from ums.db.async_session import AsyncSessionStream
@@ -14,12 +14,12 @@ class UserValidator:
         db: AsyncSessionStream,
         input: UserCreate | UserUpdate,
     ) -> User:
-        # Check role_id is valid
+        # Check role ID is valid
         if input.role_id:
-            statement = select(Role).where(Role.id == input.role_id)
+            role_statement = select(Role).where(Role.id == input.role_id)
 
             async with db() as session:
-                role = await session.scalar(statement)
+                role = await session.scalar(role_statement)
                 await session.commit()
 
             if not role:
@@ -27,19 +27,19 @@ class UserValidator:
 
             input.role_id = role.id
 
-        # Check groups_ids are valid
+        # Check group IDs are valid
         user_groups = []
-        if input.groups_ids:
-            statement = select(Group).where(Group.is_active == True)  # type: ignore  # noqa: E712
+        if input.group_ids:
+            groups_statement = select(Group).where(column("is_active").is_(True))
 
             async with db() as session:
-                result = await session.scalars(statement)
+                result = await session.scalars(groups_statement)
                 await session.commit()
                 active_groups = result.all()
 
             if active_groups:
                 active_group_ids_set = {group.id for group in active_groups}
-                input_group_ids_set = set(input.groups_ids)
+                input_group_ids_set = set(input.group_ids)
 
                 invalid_group_ids = input_group_ids_set - active_group_ids_set
 

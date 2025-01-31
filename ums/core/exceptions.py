@@ -12,6 +12,10 @@ class InvalidGroupException(CoreException):
     ...
 
 
+class InvalidUserException(CoreException):
+    ...
+
+
 class AuthenticationException(CoreException):
     ...
 

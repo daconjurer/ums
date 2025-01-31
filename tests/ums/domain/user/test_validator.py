@@ -28,7 +28,7 @@ class TestUserValidator:
             email="test-user@example.com",
             password="test",
             role_id=test_role1.id,
-            groups_ids=[test_group1.id, test_group2.id],
+            group_ids=[test_group1.id, test_group2.id],
         )
 
         # Test
@@ -86,7 +86,7 @@ class TestUserValidator:
             full_name="Test User",
             email="test-user@example.com",
             password="test",
-            groups_ids=[invalid_group_id],
+            group_ids=[invalid_group_id],
         )
 
         # Test
@@ -110,7 +110,7 @@ class TestUserValidator:
             full_name="Test User",
             email="test-user@example.com",
             password="test",
-            groups_ids=[test_group1.id, test_group2.id],
+            group_ids=[test_group1.id, test_group2.id],
             role_id=test_role1.id,
         )
 
