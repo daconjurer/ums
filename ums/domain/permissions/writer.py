@@ -1,4 +1,4 @@
-from ums.domain.data_access.writer import GenericWriter
+from ums.data_access.writer import GenericWriter
 from ums.domain.entities import Permissions
 
 

@@ -3,10 +3,10 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query, Security
 
 from ums.api.auth import get_current_active_user
+from ums.api.middlewares.filter_sort import parse_sorting
 from ums.core.filter_sort import SortParams
 from ums.domain.user.schemas import UserPublic
 from ums.domain.user.service import User, UserFilterParams, UserService, UserSortOptions
-from ums.middlewares.filter_sort import parse_sorting
 
 router = APIRouter(tags=["user"])
 

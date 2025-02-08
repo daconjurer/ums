@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, Security
 
+from ums.api.middlewares.filter_sort import parse_sorting
 from ums.api.v1.controllers import user
 from ums.api.v1.controllers.auth import get_current_active_user
 from ums.crud.user.repository import (
@@ -12,7 +13,6 @@ from ums.crud.user.repository import (
 )
 from ums.db.async_connection import AsyncDatabaseSession, db
 from ums.domain.entities import User
-from ums.middlewares.filter_sort import parse_sorting
 
 router = APIRouter(tags=["user"])
 

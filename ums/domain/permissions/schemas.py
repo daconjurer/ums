@@ -1,6 +1,6 @@
 import uuid
 
-from ums.domain.data_access.interfaces import Schema
+from ums.data_access.interfaces import Schema
 
 
 class PermissionsCreate(Schema):

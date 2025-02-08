@@ -21,8 +21,8 @@ from fastapi.encoders import jsonable_encoder
 from sqlmodel import SQLModel, select
 
 from ums.api.exceptions import UMSException
+from ums.api.middlewares.filter_sort import BaseFilterParams, SortParams
 from ums.db.async_connection import AsyncDatabaseSession
-from ums.middlewares.filter_sort import BaseFilterParams, SortParams
 from ums.domain.entities import Base
 
 ModelType = TypeVar("ModelType", bound=Base)

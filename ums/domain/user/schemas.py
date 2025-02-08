@@ -3,7 +3,7 @@ from typing import Sequence
 
 from pydantic import EmailStr
 
-from ums.domain.data_access.interfaces import Schema
+from ums.data_access.interfaces import Schema
 
 
 class UserCreate(Schema):

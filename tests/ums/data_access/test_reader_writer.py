@@ -5,12 +5,12 @@ from pydantic import Field
 from sqlmodel import Field as SQLModelField
 
 from tests.fixtures.db import async_session, engine, setup_and_teardown_db  # noqa F401
-from ums.core.exceptions import CoreException
 from ums.core.filter_sort import BaseFilterParams, SortOptions, SortParams
-from ums.domain.data_access.interfaces import Schema
-from ums.domain.data_access.reader import GenericReader
-from ums.domain.data_access.writer import GenericWriter
+from ums.data_access.interfaces import Schema
+from ums.data_access.reader import GenericReader
+from ums.data_access.writer import GenericWriter
 from ums.domain.entities import Base
+from ums.domain.exceptions import CoreException
 
 
 class ABModel(Base, table=True):
@@ -71,7 +71,7 @@ class TestGenericWriter:
 
         # Test
         async with async_session() as session:
-            created_object = await self.ab_writer.upsert(
+            created_object = await self.ab_writer.create(
                 session=session,
                 entity=test_record,
             )
@@ -90,7 +90,7 @@ class TestGenericWriter:
         test_add_record = ABModel(a=1, b=2)
 
         async with async_session() as session:
-            created_object = await self.ab_writer.upsert(
+            created_object = await self.ab_writer.create(
                 session=session,
                 entity=test_add_record,
             )
@@ -115,11 +115,11 @@ class TestGenericWriter:
         test_add_record_2 = ABModel(a=2, b=3)
 
         async with async_session() as session:
-            created_object_1 = await self.ab_writer.upsert(
+            created_object_1 = await self.ab_writer.create(
                 session=session,
                 entity=test_add_record_1,
             )
-            _ = await self.ab_writer.upsert(
+            _ = await self.ab_writer.create(
                 session=session,
                 entity=test_add_record_2,
             )
@@ -144,11 +144,11 @@ class TestGenericWriter:
         test_add_record_2 = ABModel(a=2, b=3)
 
         async with async_session() as session:
-            _ = await self.ab_writer.upsert(
+            _ = await self.ab_writer.create(
                 session=session,
                 entity=test_add_record_1,
             )
-            _ = await self.ab_writer.upsert(
+            _ = await self.ab_writer.create(
                 session=session,
                 entity=test_add_record_2,
             )
@@ -184,7 +184,7 @@ class TestGenericWriter:
             test_records.append(test_record)
 
             async with async_session() as session:
-                created_object = await self.ab_writer.upsert(
+                created_object = await self.ab_writer.create(
                     session=session,
                     entity=test_record,
                 )
@@ -199,7 +199,7 @@ class TestGenericWriter:
             test_records.append(test_record)
 
             async with async_session() as session:
-                created_object = await self.ab_writer.upsert(
+                created_object = await self.ab_writer.create(
                     session=session,
                     entity=test_record,
                 )
@@ -232,12 +232,12 @@ class TestGenericWriter:
         # Clean-up
         ...
 
-    async def test_upsert(self, async_session):  # noqa F811
+    async def test_create(self, async_session):  # noqa F811
         # Setup
         test_record = ABModel(a=1, b=2)
 
         async with async_session() as session:
-            _ = await self.ab_writer.upsert(
+            _ = await self.ab_writer.create(
                 session=session,
                 entity=test_record,
             )
@@ -247,7 +247,7 @@ class TestGenericWriter:
 
         # Test
         async with async_session() as session:
-            updated_object = await self.ab_writer.upsert(
+            updated_object = await self.ab_writer.create(
                 session=session,
                 entity=test_update_record,
             )
@@ -265,7 +265,7 @@ class TestGenericWriter:
         # Setup
         test_record = ABModel(a=1, b=2)
         async with async_session() as session:
-            created_object = await self.ab_writer.upsert(
+            created_object = await self.ab_writer.create(
                 session=session,
                 entity=test_record,
             )

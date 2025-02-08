@@ -3,9 +3,9 @@ from datetime import datetime
 from typing import Callable
 from uuid import UUID
 
-from ums.core import exceptions
 from ums.core.filter_sort import SortOptions, SortParams
 from ums.core.security import get_password_hash
+from ums.domain import exceptions
 from ums.domain.entities import User
 from ums.domain.service.domain import DomainService
 from ums.domain.user.reader import UserFilterParams, user_reader
@@ -28,6 +28,9 @@ class UserSortOptions(SortOptions):
 
 
 class UserService(DomainService[User]):
+    reader = user_reader
+    writer = user_writer
+
     async def add_user(
         self,
         user_create: UserCreate,
@@ -41,7 +44,7 @@ class UserService(DomainService[User]):
 
         # Create record
         async with self.db() as session:
-            user = await user_writer.upsert(session, validated_user)
+            user = await self.writer.create(session, validated_user)
             await session.commit()
             return user
 
@@ -51,7 +54,7 @@ class UserService(DomainService[User]):
         hashing_function: Callable[[str], str] = get_password_hash,
     ) -> User | None:
         # Check if user exists
-        user = await user_reader.get(self.db, user_update.id)
+        user = await self.reader.get(self.db, user_update.id)
 
         if not user:
             raise exceptions.InvalidUserException()
@@ -75,7 +78,7 @@ class UserService(DomainService[User]):
 
         # Update record
         async with self.db() as session:
-            user = await user_writer.upsert(session, validated_user)
+            user = await self.writer.update(session, validated_user)
             await session.commit()
             return user
 
@@ -83,7 +86,7 @@ class UserService(DomainService[User]):
         self,
         name: str,
     ) -> User | None:
-        user = await user_reader.get_by(
+        user = await self.reader.get_by(
             db=self.db,
             filter=UserFilterParams(name=name),
         )
@@ -94,7 +97,7 @@ class UserService(DomainService[User]):
         name: str,
     ) -> UUID | None:
         """Get the role_id of a user."""
-        user = await user_reader.get_by(
+        user = await self.reader.get_by(
             db=self.db,
             filter=UserFilterParams(name=name),
         )
@@ -109,7 +112,7 @@ class UserService(DomainService[User]):
         limit: int,
         page: int,
     ) -> list[User]:
-        return await user_reader.get_many(
+        return await self.reader.get_many(
             db=self.db,
             filter=filter,
             sort=sort,

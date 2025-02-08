@@ -9,9 +9,9 @@ from loguru import logger
 from pydantic import BaseModel, ValidationError
 
 from ums.api.v1.controllers import user as user_controller
-from ums.core import exceptions
 from ums.core.security import verify_password
 from ums.db.async_connection import AsyncDatabaseSession, db
+from ums.domain import exceptions
 from ums.domain.entities import User
 from ums.settings.application import get_app_settings
 

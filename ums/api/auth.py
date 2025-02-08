@@ -8,8 +8,8 @@ from jose import JWTError, jwt
 from loguru import logger
 from pydantic import BaseModel, ValidationError
 
-from ums.core import exceptions
 from ums.core.security import verify_password
+from ums.domain import exceptions
 from ums.domain.entities import User
 from ums.domain.user.service import UserService
 from ums.settings.application import get_app_settings

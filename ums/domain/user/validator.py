@@ -1,7 +1,7 @@
 from sqlmodel import column, select
 
-from ums.core import exceptions
 from ums.db.async_session import AsyncSessionStream
+from ums.domain import exceptions
 from ums.domain.entities import Group, Role, User
 from ums.domain.user.schemas import UserCreate, UserUpdate
 
@@ -37,20 +37,22 @@ class UserValidator:
                 await session.commit()
                 active_groups = result.all()
 
-            if active_groups:
-                active_group_ids_set = {group.id for group in active_groups}
-                input_group_ids_set = set(input.group_ids)
+            if not active_groups:
+                raise exceptions.InvalidGroupException("No active groups found")
 
-                invalid_group_ids = input_group_ids_set - active_group_ids_set
+            active_group_ids_set = {group.id for group in active_groups}
+            input_group_ids_set = set(input.group_ids)
 
-                if invalid_group_ids:
-                    raise exceptions.InvalidGroupException(
-                        f"Invalid group_id: {invalid_group_ids.pop()}"
-                    )
+            invalid_group_ids = input_group_ids_set - active_group_ids_set
 
-                user_groups = [
-                    group for group in active_groups if group.id in input_group_ids_set
-                ]
+            if invalid_group_ids:
+                raise exceptions.InvalidGroupException(
+                    f"Invalid group_id: {invalid_group_ids.pop()}"
+                )
+
+            user_groups = [
+                group for group in active_groups if group.id in input_group_ids_set
+            ]
 
         # Assign groups
         valid_user = User(

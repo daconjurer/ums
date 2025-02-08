@@ -4,10 +4,15 @@ from uuid import UUID
 from sqlmodel import and_, select
 
 from ums.domain.entities import Permissions, RolePermissionLink
+from ums.domain.permissions.reader import permissions_reader
+from ums.domain.permissions.writer import permissions_writer
 from ums.domain.service.domain import DomainService
 
 
 class PermissionsService(DomainService[Permissions]):
+    reader = permissions_reader
+    writer = permissions_writer
+
     async def get_by_role_id(
         self,
         role_id: UUID,

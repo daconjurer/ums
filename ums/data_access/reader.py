@@ -4,10 +4,10 @@ from typing import Type
 from loguru import logger
 from sqlalchemy import column, select
 
-from ums.core.exceptions import CoreException
 from ums.core.filter_sort import BaseFilterParams, SortParams
+from ums.data_access.interfaces import Entity, IRead
 from ums.db.async_session import AsyncSessionStream
-from ums.domain.data_access.interfaces import Entity, IRead
+from ums.domain.exceptions import CoreException
 
 
 class GenericReader(IRead[Entity]):

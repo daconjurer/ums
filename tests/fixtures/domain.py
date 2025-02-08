@@ -119,3 +119,29 @@ async def initialized_users(async_session):
         await session.commit()
 
     yield test_user_1, test_user_2, test_user_3, test_user_4
+
+
+@pytest_asyncio.fixture
+async def initialized_user_with_role_and_groups(
+    async_session,
+    initialized_roles,
+    # initialized_groups,  # TODO: Add this fixture
+):
+    test_role, _, _ = initialized_roles
+    # test_group_1, _, _ = initialized_groups
+
+    test_user_1 = User(
+        id=UUID("f18941a4-bb0e-444a-b6a0-a19509cc6089"),
+        name="vic",
+        full_name="Victor Sandoval",
+        email="victor.sandoval@rfs-example.com",
+        password=get_password_hash("password1"),
+        role_id=test_role.id,
+        # groups=[test_group_1],
+    )
+
+    async with async_session() as session:
+        session.add(test_user_1)
+        await session.commit()
+
+    yield test_user_1

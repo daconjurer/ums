@@ -3,7 +3,7 @@ from uuid import UUID
 import pytest_asyncio
 from fastapi.testclient import TestClient
 
-from ums.core.app_factory import create_app
+from ums.api.app_factory import create_app
 from ums.core.security import get_password_hash
 from ums.db.async_connection import (
     DatabaseManager,

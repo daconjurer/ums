@@ -1,7 +1,7 @@
 from pydantic import Field
 
 from ums.core.filter_sort import BaseFilterParams
-from ums.domain.data_access.reader import GenericReader
+from ums.data_access.reader import GenericReader
 from ums.domain.entities import User
 
 

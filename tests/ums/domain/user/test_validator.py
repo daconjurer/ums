@@ -5,7 +5,7 @@ import pytest
 
 from tests.fixtures.db import async_session, engine, setup_and_teardown_db  # noqa F401
 from tests.fixtures.domain import initialized_groups, initialized_roles  # noqa F401
-from ums.core import exceptions
+from ums.domain import exceptions
 from ums.domain.entities import User
 from ums.domain.user.schemas import UserCreate, UserUpdate
 from ums.domain.user.validator import UserValidator

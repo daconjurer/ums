@@ -1,7 +1,7 @@
 import uuid
 from typing import Sequence
 
-from ums.domain.data_access.interfaces import Schema
+from ums.data_access.interfaces import Schema
 
 
 class GroupCreate(Schema):

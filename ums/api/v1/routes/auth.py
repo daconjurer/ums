@@ -8,9 +8,9 @@ from pydantic import BaseModel
 
 from ums.api.v1.controllers import permissions as permissions_controller
 from ums.api.v1.controllers.auth import authenticate_user
-from ums.core.exceptions import AuthenticationException
 from ums.core.security import create_access_token
 from ums.db.async_connection import AsyncDatabaseSession, db
+from ums.domain.exceptions import AuthenticationException
 from ums.settings.application import get_app_settings
 
 security_settings = get_app_settings().security

@@ -1,5 +1,6 @@
 # Application exceptions (to handle within the application)
 
+
 class CoreException(Exception):
     ...
 

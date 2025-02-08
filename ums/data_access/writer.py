@@ -3,9 +3,10 @@ from datetime import datetime
 from typing import Type
 
 from loguru import logger
+from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session
 
-from ums.domain.data_access.interfaces import Entity, IWrite
+from ums.data_access.interfaces import Entity, IWrite
 
 if sys.version_info > (3, 11):
     from datetime import UTC
@@ -18,7 +19,7 @@ else:
 class GenericWriter(IWrite[Entity]):
     model: Type[Entity]
 
-    async def upsert(
+    async def create(
         self,
         session: async_scoped_session[AsyncSession],
         entity: Entity,
@@ -26,6 +27,19 @@ class GenericWriter(IWrite[Entity]):
         logger.info(f"Creating {self.model.__name__}")
 
         session.add(entity)
+        return entity
+
+    async def update(
+        self,
+        session: async_scoped_session[AsyncSession],
+        entity: Entity,
+    ) -> Entity:
+        logger.info(f"Updating {self.model.__name__}")
+        await session.execute(
+            update(self.model)
+            .where(self.model.id == entity.id)
+            .values(**entity.model_dump())
+        )
         return entity
 
     async def delete(

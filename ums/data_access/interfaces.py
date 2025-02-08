@@ -42,12 +42,19 @@ class IRead(Protocol[Entity]):
 class IWrite(Protocol[Entity]):
     """Interface for operations that change the state of the database."""
 
-    async def upsert(
+    async def create(
         self,
         session: async_scoped_session[AsyncSession],
         entity: Entity,
     ) -> Entity:
-        """Upsert an entity."""
+        """Create an entity."""
+
+    async def update(
+        self,
+        session: async_scoped_session[AsyncSession],
+        entity: Entity,
+    ) -> Entity:
+        """Update an entity."""
 
     async def delete(
         self,

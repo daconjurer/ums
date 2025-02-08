@@ -18,6 +18,7 @@ else:
     UTC = timezone.utc
 
 from ums.api import exceptions
+from ums.api.middlewares.filter_sort import SortOptions
 from ums.core.security import get_password_hash
 from ums.crud.base import (
     BaseFilterParams,
@@ -28,7 +29,6 @@ from ums.crud.base import (
 )
 from ums.crud.user.schemas import UserCreate
 from ums.crud.user.validation import UserValidator
-from ums.middlewares.filter_sort import SortOptions
 from ums.domain.entities import User
 
 
