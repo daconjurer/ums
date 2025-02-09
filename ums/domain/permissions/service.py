@@ -28,6 +28,7 @@ class PermissionsService(DomainService[Permissions]):
                 ),
             )
             # Equivalent (but typed) to:
+            # select(Permissions)
             # .join(RolePermissionLink, Permissions.id == RolePermissionLink.permission_id)
             # .filter(RolePermissionLink.role_id == role_id)
         )
