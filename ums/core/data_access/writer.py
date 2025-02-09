@@ -6,7 +6,7 @@ from loguru import logger
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session
 
-from ums.data_access.interfaces import Entity, IWrite
+from ums.core.data_access.interfaces import Entity, IWrite
 
 if sys.version_info > (3, 11):
     from datetime import UTC

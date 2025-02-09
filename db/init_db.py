@@ -1,8 +1,8 @@
 import asyncio
 from uuid import UUID
 
-from ums.core.security import get_password_hash
-from ums.db.async_connection import DatabaseManager, create_custom_engine, get_async_session
+from ums.core.utils.security import get_password_hash
+from ums.core.db.async_connection import DatabaseManager, create_custom_engine, get_async_session
 from ums.domain.entities import Group, Permissions, Role, User
 
 from ums.settings.application import get_app_settings

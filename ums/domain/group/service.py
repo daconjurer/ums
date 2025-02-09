@@ -1,6 +1,6 @@
 import sys
 
-from ums.core.filter_sort import SortOptions, SortParams
+from ums.core.utils.filter_sort import SortOptions, SortParams
 from ums.domain import exceptions
 from ums.domain.entities import Group
 from ums.domain.group.reader import GroupFilterParams, group_reader

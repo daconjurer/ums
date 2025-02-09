@@ -1,6 +1,6 @@
 from sqlmodel import select
 
-from ums.db.async_session import AsyncSessionStream
+from ums.core.db.async_session import AsyncSessionStream
 from ums.domain import exceptions
 from ums.domain.entities import Permissions, Role
 from ums.domain.permissions.schemas import PermissionsCreate, PermissionsUpdate

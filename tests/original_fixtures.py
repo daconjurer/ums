@@ -4,8 +4,8 @@ import pytest_asyncio
 from fastapi.testclient import TestClient
 
 from ums.api.app_factory import create_app
-from ums.core.security import get_password_hash
-from ums.db.async_connection import (
+from ums.core.utils.security import get_password_hash
+from ums.core.db.async_connection import (
     DatabaseManager,
     create_custom_engine,
     get_async_session,

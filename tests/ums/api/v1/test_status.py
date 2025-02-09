@@ -7,7 +7,7 @@ from tests.original_fixtures import (
     initialized_admin,  # noqa F401
     setup_and_teardown_db,  # noqa F401
 )
-from ums.core.security import create_access_token
+from ums.core.utils.security import create_access_token
 
 
 class TestStatusRoute:

@@ -1,4 +1,4 @@
-from ums.data_access.reader import GenericReader
+from ums.core.data_access.reader import GenericReader
 from ums.domain.entities import Permissions
 
 

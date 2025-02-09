@@ -2,7 +2,7 @@ from uuid import UUID
 
 import pytest_asyncio
 
-from ums.core.security import get_password_hash
+from ums.core.utils.security import get_password_hash
 from ums.domain.entities import Group, Permissions, Role, User
 
 

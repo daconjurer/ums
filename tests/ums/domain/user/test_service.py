@@ -10,7 +10,7 @@ from tests.fixtures.domain import (
     initialized_user_with_role_and_groups,  # noqa F811
     initialized_users,  # noqa F811
 )
-from ums.core.security import verify_password
+from ums.core.utils.security import verify_password
 from ums.domain import exceptions
 from ums.domain.entities import User
 from ums.domain.user.schemas import UserCreate, UserUpdate

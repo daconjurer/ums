@@ -1,6 +1,6 @@
 from sqlmodel import column, select
 
-from ums.db.async_session import AsyncSessionStream
+from ums.core.db.async_session import AsyncSessionStream
 from ums.domain import exceptions
 from ums.domain.entities import Group, User
 from ums.domain.group.schemas import GroupCreate, GroupUpdate

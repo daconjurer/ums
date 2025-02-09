@@ -3,8 +3,8 @@ from datetime import datetime
 from typing import Callable
 from uuid import UUID
 
-from ums.core.filter_sort import SortOptions, SortParams
-from ums.core.security import get_password_hash
+from ums.core.utils.filter_sort import SortOptions, SortParams
+from ums.core.utils.security import get_password_hash
 from ums.domain import exceptions
 from ums.domain.entities import User
 from ums.domain.service.domain import DomainService

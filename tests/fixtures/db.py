@@ -1,6 +1,6 @@
 import pytest_asyncio
 
-from ums.db.async_session import (
+from ums.core.db.async_session import (
     DatabaseManager,
     create_custom_engine,
     get_async_session,

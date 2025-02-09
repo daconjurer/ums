@@ -5,10 +5,10 @@ from pydantic import Field
 from sqlmodel import Field as SQLModelField
 
 from tests.fixtures.db import async_session, engine, setup_and_teardown_db  # noqa F401
-from ums.core.filter_sort import BaseFilterParams, SortOptions, SortParams
-from ums.data_access.interfaces import Schema
-from ums.data_access.reader import GenericReader
-from ums.data_access.writer import GenericWriter
+from ums.core.data_access.interfaces import Schema
+from ums.core.data_access.reader import GenericReader
+from ums.core.data_access.writer import GenericWriter
+from ums.core.utils.filter_sort import BaseFilterParams, SortOptions, SortParams
 from ums.domain.entities import Base
 from ums.domain.exceptions import CoreException
 

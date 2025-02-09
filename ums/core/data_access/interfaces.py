@@ -4,8 +4,8 @@ from typing import Protocol, TypeVar
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session
 
-from ums.core.filter_sort import BaseFilterParams, SortParams
-from ums.db.async_session import AsyncSessionStream
+from ums.core.utils.filter_sort import BaseFilterParams, SortParams
+from ums.core.db.async_session import AsyncSessionStream
 from ums.domain.entities import Base
 
 Entity = TypeVar("Entity", bound=Base)

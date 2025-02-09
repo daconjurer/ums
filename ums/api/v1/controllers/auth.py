@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from loguru import logger
 
 from ums.api.auth import Token, authenticate_user
-from ums.core.security import create_access_token
+from ums.core.utils.security import create_access_token
 from ums.domain.exceptions import AuthenticationException
 from ums.domain.permissions.service import PermissionsService
 from ums.settings.application import get_app_settings

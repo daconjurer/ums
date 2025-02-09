@@ -1,9 +1,9 @@
 from typing import Generic
 
-from ums.data_access.interfaces import Entity
-from ums.data_access.reader import GenericReader
-from ums.data_access.writer import GenericWriter
-from ums.db.async_session import AsyncSessionStream, AsyncSessionStreamProvider, db
+from ums.core.data_access.interfaces import Entity
+from ums.core.data_access.reader import GenericReader
+from ums.core.data_access.writer import GenericWriter
+from ums.core.db.async_session import AsyncSessionStream, AsyncSessionStreamProvider, db
 from ums.domain.service.interfaces import IService
 
 

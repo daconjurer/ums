@@ -2,7 +2,7 @@ import asyncio
 import uuid
 from typing import Sequence
 
-from ums.db.async_session import AsyncSessionStream, db
+from ums.core.db.async_session import AsyncSessionStream, db
 from ums.domain.entities import User
 from ums.domain.group.schemas import GroupUpdate
 from ums.domain.group.validator import GroupValidator
