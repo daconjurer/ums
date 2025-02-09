@@ -3,15 +3,34 @@ from uuid import UUID
 
 from sqlmodel import and_, select
 
+from ums.core.service.domain import DomainService
 from ums.domain.entities import Permissions, RolePermissionLink
 from ums.domain.permissions.reader import permissions_reader
+from ums.domain.permissions.schemas import PermissionsCreate
+from ums.domain.permissions.validator import PermissionsValidator
 from ums.domain.permissions.writer import permissions_writer
-from ums.domain.service.domain import DomainService
 
 
 class PermissionsService(DomainService[Permissions]):
     reader = permissions_reader
     writer = permissions_writer
+
+    async def add_permissions(
+        self,
+        permissions_create: PermissionsCreate,
+    ) -> Permissions:
+        # Validate permissions
+        validated_permissions = await PermissionsValidator().validate(
+            self.db, permissions_create
+        )
+
+        # Create record
+        async with self.db() as session:
+            permissions = await permissions_writer.create(
+                session, validated_permissions
+            )
+            await session.commit()
+            return permissions
 
     async def get_by_role_id(
         self,

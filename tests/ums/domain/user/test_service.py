@@ -10,11 +10,12 @@ from tests.fixtures.domain import (
     initialized_user_with_role_and_groups,  # noqa F811
     initialized_users,  # noqa F811
 )
+from ums.core.utils.filter_sort import SortParams
 from ums.core.utils.security import verify_password
 from ums.domain import exceptions
 from ums.domain.entities import User
 from ums.domain.user.schemas import UserCreate, UserUpdate
-from ums.domain.user.service import UserService
+from ums.domain.user.service import UserFilterParams, UserService
 
 
 class TestUserService:
@@ -201,3 +202,24 @@ class TestUserService:
         role_id = await user_service.get_user_role_id("nonexistent_user")
 
         assert role_id is None
+
+    async def test_get_user_groups_order_by_full_name(
+        self,
+        initialized_users,  # noqa F811
+    ):
+        test_user1, _, _, _ = initialized_users
+
+        user_service = UserService()
+        users = await user_service.get_users(
+            filter=UserFilterParams(is_active=True),
+            sort=SortParams(sort_by="full_name", sort_order="asc"),
+            limit=4,
+            page=1,
+        )
+
+        assert users is not None
+        assert len(users) == 4
+        assert users[0].full_name == "Juan Valdez"
+        assert users[1].full_name == "Lupe Pintos"
+        assert users[2].full_name == "Sebastian Manzano"
+        assert users[3].full_name == "Victor Sandoval"

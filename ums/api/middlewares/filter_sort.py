@@ -2,7 +2,8 @@ from typing import Callable, Type, TypeAlias, get_args
 
 from fastapi import Query
 
-from ums.core.utils.filter_sort import SortOptions, SortParams, SortOrder
+from ums.core.utils.filter_sort import SortOptions, SortOrder, SortParams
+
 
 def parse_sorting(options: Type[SortOptions]) -> Callable:
     OptionsAlias: TypeAlias = options  # type: ignore[valid-type]

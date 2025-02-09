@@ -3,11 +3,11 @@ from datetime import datetime
 from typing import Callable
 from uuid import UUID
 
+from ums.core.service.domain import DomainService
 from ums.core.utils.filter_sort import SortOptions, SortParams
 from ums.core.utils.security import get_password_hash
 from ums.domain import exceptions
 from ums.domain.entities import User
-from ums.domain.service.domain import DomainService
 from ums.domain.user.reader import UserFilterParams, user_reader
 from ums.domain.user.schemas import UserCreate, UserUpdate
 from ums.domain.user.validator import UserValidator

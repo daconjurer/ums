@@ -1,5 +1,6 @@
 import sys
 
+from ums.core.service.domain import DomainService
 from ums.core.utils.filter_sort import SortOptions, SortParams
 from ums.domain import exceptions
 from ums.domain.entities import Group
@@ -7,7 +8,6 @@ from ums.domain.group.reader import GroupFilterParams, group_reader
 from ums.domain.group.schemas import GroupCreate, GroupUpdate
 from ums.domain.group.validator import GroupValidator
 from ums.domain.group.writer import group_writer
-from ums.domain.service.domain import DomainService
 
 if sys.version_info > (3, 11):
     from datetime import UTC

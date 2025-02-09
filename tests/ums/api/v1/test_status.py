@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from tests.original_fixtures import (
+from tests.fixtures.original_fixtures import (
     async_session,  # noqa F401
     client,  # noqa F401
     engine,  # noqa F401

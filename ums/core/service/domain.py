@@ -4,7 +4,7 @@ from ums.core.data_access.interfaces import Entity
 from ums.core.data_access.reader import GenericReader
 from ums.core.data_access.writer import GenericWriter
 from ums.core.db.async_session import AsyncSessionStream, AsyncSessionStreamProvider, db
-from ums.domain.service.interfaces import IService
+from ums.core.service.interfaces import IService
 
 
 class DomainService(IService, Generic[Entity]):

@@ -17,17 +17,24 @@ class GroupValidator:
         # Check member IDs are valid
         group_members = []
 
-        if input.member_ids:
-            statement = select(User).where(
-                column("id").in_(input.member_ids),
-                column("is_active").is_(True),
-                column("is_deleted").is_(False),
+        if not input.member_ids:
+            valid_group_without_members = Group(
+                **input.model_dump(exclude_none=True, exclude_unset=True),
+                members=group_members,
             )
+            return valid_group_without_members
 
-            async with db() as session:
-                result = await session.scalars(statement)
-                await session.commit()
-                group_members = list(result.all())
+        # Start members validation
+        statement = select(User).where(
+            column("id").in_(input.member_ids),
+            column("is_active").is_(True),
+            column("is_deleted").is_(False),
+        )
+
+        async with db() as session:
+            result = await session.scalars(statement)
+            await session.commit()
+            group_members = list(result.all())
 
         # No matching members
         if not group_members:
@@ -52,9 +59,9 @@ class GroupValidator:
         ]
 
         # Assign members
-        valid_group = Group(
+        valid_group_with_members = Group(
             **input.model_dump(exclude_none=True, exclude_unset=True),
             members=group_members,
         )
 
-        return valid_group
+        return valid_group_with_members

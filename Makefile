@@ -1,4 +1,4 @@
-DIRS = ums/domain/ tests/ums/domain/ tests/ums/data_access/
+DIRS = ums/ tests/
 
 .PHONY: lint format pyright test coverage
 
@@ -17,5 +17,8 @@ test:
 coverage:
 	poetry run coverage report -m
 
+coverage-html:
+	poetry run coverage html
+
 # Convenience target to run all checks
-check: lint format pyright test coverage 
+check: lint format pyright test coverage coverage-html
