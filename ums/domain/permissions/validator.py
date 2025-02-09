@@ -6,7 +6,6 @@ from ums.domain.entities import Permissions, Role
 from ums.domain.permissions.schemas import PermissionsCreate, PermissionsUpdate
 
 
-# TODO: validate role IDs
 class PermissionsValidator:
     """Validates a PermissionsCreate or PermissionsUpdate object."""
 
