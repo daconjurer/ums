@@ -8,7 +8,7 @@ lint:
 format:
 	poetry run ruff format $(DIRS)
 
-pyright:
+typecheck:
 	poetry run pyright $(DIRS)
 
 test:
@@ -21,4 +21,4 @@ coverage-html:
 	poetry run coverage html
 
 # Convenience target to run all checks
-check: lint format pyright test coverage coverage-html
+check: lint format typecheck test coverage coverage-html
