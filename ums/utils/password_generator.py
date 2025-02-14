@@ -1,6 +1,6 @@
 import secrets
 
-from ums.core.security import get_password_hash
+from ums.core.utils.security import get_password_hash
 
 
 def create_password(length: int = 8) -> str:

@@ -16,10 +16,10 @@ if [ $? -ne 0 ]; then
 fi
 echo "DONE!"
 
-echo "mypy ums/ tests/ db/"
-mypy ums/ tests/ db/
+echo "pyright ums/ tests/ db/"
+pyright ums/ tests/ db/
 if [ $? -ne 0 ]; then
-    echo "Error: mypy failed"
+    echo "Error: pyright failed"
     exit 1
 fi
 echo "DONE!"
