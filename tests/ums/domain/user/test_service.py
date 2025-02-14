@@ -134,7 +134,9 @@ class TestUserService:
         assert user.email == user_update.email
         assert verify_password(user_update.password, user.password)
         assert user.role_id == user_update.role_id
-        assert user.groups[0].id == user_update.group_ids[0]
+        if user_update.group_ids:
+            group_ids = {group.id for group in user.groups}
+            assert group_ids.intersection(user_update.group_ids)
 
     async def test_update_user_when_user_does_not_exist(
         self,

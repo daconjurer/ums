@@ -19,7 +19,7 @@ def parse_sorting(options: Type[SortOptions]) -> Callable:
             description=f"Options: {', '.join(list(get_args(SortOrder)))}",
         ),
     ):
-        if sort_by:
+        if sort_by and sort_order:
             return SortParams(
                 sort_by=sort_by,
                 sort_order=sort_order,

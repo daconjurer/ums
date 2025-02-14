@@ -133,15 +133,19 @@ async def get_async_session(
     connection: AsyncDatabaseConnection = db_connection,
     current_request: Callable = current_task,
 ) -> AsyncIterator[async_scoped_session[AsyncSession]]:
+    session: async_scoped_session[AsyncSession] | None = None
+
     try:
         session = connection.get_session(current_request=current_request)
         yield session
     except SQLAlchemyError:
-        await session.rollback()
+        if session is not None:
+            await session.rollback()
         raise
     finally:
-        await session.close()
-        await connection.close_engine()
+        if session is not None:
+            await session.close()
+            await connection.close_engine()
 
 
 class AsyncSessionStreamProvider:

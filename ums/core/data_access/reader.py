@@ -45,8 +45,10 @@ class GenericReader(IRead[Entity]):
         if len(filters) > 1:
             raise CoreException("Only one filter is allowed for this operation.")
 
+        statement = select(self.model)
+
         for key, value in filters.items():
-            statement = select(self.model).where(column(key) == value)
+            statement = statement.where(column(key) == value)
 
         async with db() as session:
             result = await session.scalar(statement)

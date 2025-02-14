@@ -39,7 +39,7 @@ class GroupValidator:
         # No matching members
         if not group_members:
             raise exceptions.InvalidUserException(
-                f"Invalid member_id: {input.member_ids.pop()}"
+                f"Invalid member_id: {input.member_ids[0]}"
             )
 
         # Check for invalid member IDs

@@ -31,7 +31,7 @@ class Base(SQLModel):
 
 
 class UserGroupLink(Base, table=True):
-    __tablename__ = "user_group_link"
+    __tablename__ = "user_group_link"  # type: ignore[attr-defined]
 
     id: uuid.UUID = Field(
         default_factory=uuid.uuid4,
@@ -47,7 +47,7 @@ class UserGroupLink(Base, table=True):
 
 
 class RolePermissionLink(Base, table=True):
-    __tablename__ = "role_permission_link"
+    __tablename__ = "role_permission_link"  # type: ignore[attr-defined]
 
     id: uuid.UUID = Field(
         default_factory=uuid.uuid4,
@@ -66,7 +66,7 @@ class RolePermissionLink(Base, table=True):
 
 
 class Group(Base, table=True):
-    __tablename__ = "groups"
+    __tablename__ = "groups"  # type: ignore[attr-defined]
 
     id: uuid.UUID = Field(
         default_factory=uuid.uuid4,
@@ -86,7 +86,7 @@ class Group(Base, table=True):
 
 
 class Role(Base, table=True):
-    __tablename__ = "roles"
+    __tablename__ = "roles"  # type: ignore[attr-defined]
 
     id: uuid.UUID = Field(
         default_factory=uuid.uuid4,
@@ -104,7 +104,7 @@ class Role(Base, table=True):
 
 
 class Permissions(Base, table=True):
-    __tablename__ = "permissions"
+    __tablename__ = "permissions"  # type: ignore[attr-defined]
 
     id: uuid.UUID = Field(
         default_factory=uuid.uuid4,
@@ -122,7 +122,7 @@ class Permissions(Base, table=True):
 
 
 class User(Base, table=True):
-    __tablename__ = "users"
+    __tablename__ = "users"  # type: ignore[attr-defined]
 
     id: uuid.UUID = Field(
         default_factory=uuid.uuid4,

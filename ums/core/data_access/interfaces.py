@@ -20,6 +20,7 @@ class IRead(Protocol[Entity]):
         id: uuid.UUID,
     ) -> Entity | None:
         """Get an entity by its ID."""
+        ...
 
     async def get_by(
         self,
@@ -27,6 +28,7 @@ class IRead(Protocol[Entity]):
         filter: BaseFilterParams,
     ) -> Entity | None:
         """Get an entity using a key-value filter."""
+        ...
 
     async def get_many(
         self,
@@ -37,6 +39,7 @@ class IRead(Protocol[Entity]):
         page: int | None = 1,
     ) -> list[Entity]:
         """Get many entities."""
+        ...
 
 
 class IWrite(Protocol[Entity]):
@@ -48,6 +51,7 @@ class IWrite(Protocol[Entity]):
         entity: Entity,
     ) -> Entity:
         """Create an entity."""
+        ...
 
     async def update(
         self,
@@ -55,6 +59,7 @@ class IWrite(Protocol[Entity]):
         entity: Entity,
     ) -> Entity:
         """Update an entity."""
+        ...
 
     async def delete(
         self,
@@ -62,6 +67,7 @@ class IWrite(Protocol[Entity]):
         entity: Entity,
     ) -> Entity:
         """Delete an entity."""
+        ...
 
 
 class Schema(BaseModel):
