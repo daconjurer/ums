@@ -1,42 +1,41 @@
-from uuid import UUID
+from typing import Annotated
 
-from pydantic import BaseModel, EmailStr
+from fastapi import APIRouter, Depends, Query, Security
 
-from ums.crud.user.repository import User, UserFilterParams, user_repository
-from ums.db.async_connection import AsyncDatabaseSession
+from ums.api.auth import get_current_active_user
+from ums.api.middlewares.filter_sort import parse_sorting
+from ums.core.utils.filter_sort import SortParams
+from ums.domain.user.schemas import UserPublic
+from ums.domain.user.service import User, UserFilterParams, UserService, UserSortOptions
 
-
-class UserPublic(BaseModel):
-    name: str
-    full_name: str | None
-    email: EmailStr
-    is_verified: bool
+router = APIRouter(tags=["user"])
 
 
-def get_user_public_info(user) -> UserPublic:
-    public_user_info = UserPublic(
-        name=user.name,
-        full_name=user.full_name,
-        email=user.email,
-        is_verified=user.is_verified,
+@router.get("/users")
+async def read_users(
+    current_user: Annotated[User, Security(get_current_active_user, scopes=["users"])],
+    filter: Annotated[UserFilterParams, Depends()],
+    sort: Annotated[SortParams, Depends(parse_sorting(UserSortOptions))],
+    limit: int = Query(10, ge=1, le=50),
+    page: int = Query(1, ge=1),
+) -> list[UserPublic]:
+    users_public_info = []
+
+    users_info = await UserService().get_users(
+        filter=filter,
+        sort=sort,
+        limit=limit,
+        page=page,
     )
-    return public_user_info
+
+    for user_info in users_info:
+        users_public_info.append(UserPublic(**user_info.model_dump()))
+
+    return users_public_info
 
 
-async def get_user_by_name(name: str, db: AsyncDatabaseSession) -> User | None:
-    user = await user_repository.get_by(
-        db=db,
-        filter=UserFilterParams(name=name),
-    )
-    return user
-
-
-async def get_user_role_id(name: str, db: AsyncDatabaseSession) -> UUID | None:
-    """Get the role_id of a user."""
-    user = await user_repository.get_by(
-        db=db,
-        filter=UserFilterParams(name=name),
-    )
-    if user:
-        return user.role_id
-    return None
+@router.get("/users/me")
+async def read_own_details(
+    current_user: Annotated[User, Security(get_current_active_user, scopes=["me"])],
+) -> UserPublic:
+    return UserPublic(**current_user.model_dump())

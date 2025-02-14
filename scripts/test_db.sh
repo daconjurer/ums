@@ -18,4 +18,4 @@ for arg in "$@"; do
     commands+=("$arg")
 done
 
-docker-compose -f $DOCKER_COMPOSE_FILE --env-file $DOTENV_FILE "${commands[@]}"
+docker compose -f $DOCKER_COMPOSE_FILE --env-file $DOTENV_FILE "${commands[@]}"
