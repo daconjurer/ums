@@ -1,25 +1,25 @@
 #! /bin/bash
 
-echo "ruff check --diff ums/ tests/ db/ && ruff check --select I --diff ums/ tests/ db/"
-ruff check --diff ums/ tests/ db/ && ruff check --select I --diff ums/ tests/ db/
+echo "make lint"
+make lint DIFF=1
 if [ $? -ne 0 ]; then
-    echo "Error: ruff check failed"
+    echo "Error: lint failed"
     exit 1
 fi
 echo "DONE!"
 
-echo "ruff format --diff ums/ tests/ db/"
-ruff format --diff ums/ tests/ db/
+echo "make format"
+make format DIFF=1
 if [ $? -ne 0 ]; then
-    echo "Error: ruff format failed"
+    echo "Error: format failed"
     exit 1
 fi
 echo "DONE!"
 
-echo "pyright ums/ tests/ db/"
-pyright ums/ tests/ db/
+echo "make typecheck"
+make typecheck
 if [ $? -ne 0 ]; then
-    echo "Error: pyright failed"
+    echo "Error: typecheck failed"
     exit 1
 fi
 echo "DONE!"

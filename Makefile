@@ -2,11 +2,14 @@ DIRS = ums/ tests/
 
 .PHONY: lint format pyright test coverage
 
+# Default to empty, can be overridden with make lint DIFF=1
+DIFF_FLAG = $(if $(DIFF),--diff,)
+
 lint:
-	poetry run ruff check --fix $(DIRS) && poetry run ruff check --select I --fix $(DIRS)
+	poetry run ruff check $(DIFF_FLAG) $(DIRS) && poetry run ruff check --select I $(DIFF_FLAG) $(DIRS)
 
 format:
-	poetry run ruff format $(DIRS)
+	poetry run ruff format $(DIFF_FLAG) $(DIRS)
 
 typecheck:
 	poetry run pyright $(DIRS)
