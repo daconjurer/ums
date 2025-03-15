@@ -1,5 +1,6 @@
 from ums.api.app_factory import create_app
 from ums.settings.application import get_app_settings
+from loguru import logger
 
 settings = get_app_settings()
 
@@ -10,7 +11,7 @@ def main():
     _reload = settings.environment == "dev"
 
     uvicorn.run(
-        app="main:app",
+        app="ums.main:app",
         host=str(settings.api.api_host),
         port=settings.api.api_port,
         reload=_reload,
