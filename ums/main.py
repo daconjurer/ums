@@ -10,7 +10,7 @@ def main():
     _reload = settings.environment == "dev"
 
     uvicorn.run(
-        app="main:app",
+        app="ums.main:app",
         host=str(settings.api.api_host),
         port=settings.api.api_port,
         reload=_reload,
