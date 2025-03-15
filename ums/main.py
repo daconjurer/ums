@@ -1,6 +1,5 @@
 from ums.api.app_factory import create_app
 from ums.settings.application import get_app_settings
-from loguru import logger
 
 settings = get_app_settings()
 
