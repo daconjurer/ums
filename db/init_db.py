@@ -159,9 +159,11 @@ async def init_db():
     async with get_async_session() as session:
         session.add_all([users_permission, me_permission, items_permission])
         session.add_all([role_admin, role_maintainer, role_engineer])
+        await session.commit()
 
     async with get_async_session() as session:
         session.add_all([group_alpha, group_delta])
+        await session.commit()
 
     async with get_async_session() as session:
         session.add_all(
@@ -178,7 +180,7 @@ async def init_db():
                 user_10,
             ]
         )
-
+        await session.commit()
 
 if __name__ == "__main__":
     asyncio.run(init_db())

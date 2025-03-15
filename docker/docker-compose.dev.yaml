@@ -1,17 +1,26 @@
-version: '3.8'
-
 services:
-  postgres:
-    image: postgres:latest
-    container_name: ums_test_db
+  db:
+    image: postgres:17.4
+    container_name: ums_db
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
+    command: ["postgres", "-c", "log_statement=all"]
     ports:
       - "5432:5432"
     volumes:
-      - test_ums_data:/var/lib/postgresql/test_ums_data
+      - ums_data:/var/lib/postgresql/ums_data
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    env_file:
+      - ../.env
 
 volumes:
-  test_ums_data:
+  ums_data:

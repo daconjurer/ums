@@ -19,6 +19,7 @@ from ums.domain.entities import Base
 from ums.settings.application import get_app_settings
 
 db_settings = get_app_settings().db
+env_settings = get_app_settings().environment
 
 
 def create_custom_engine(uri: str) -> AsyncEngine:
@@ -28,7 +29,7 @@ def create_custom_engine(uri: str) -> AsyncEngine:
         pool_size=10,
         max_overflow=0,
         pool_recycle=25,
-        echo=True,
+        echo=env_settings == "dev",
     )
 
 

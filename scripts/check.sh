@@ -16,10 +16,10 @@ if [ $? -ne 0 ]; then
 fi
 echo "DONE!"
 
-echo "make typecheck"
-make typecheck
+echo "make type-check"
+make type-check
 if [ $? -ne 0 ]; then
-    echo "Error: typecheck failed"
+    echo "Error: type-check failed"
     exit 1
 fi
 echo "DONE!"
