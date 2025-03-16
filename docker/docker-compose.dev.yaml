@@ -21,6 +21,8 @@ services:
       - db
     env_file:
       - ../.env
+    volumes:
+      - ../ums:/app/ums  # Hot reload
 
 volumes:
   ums_data:

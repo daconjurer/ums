@@ -26,6 +26,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 FROM builder as api
 
-VOLUME /app/data
-
 CMD ["python3", "-m", "ums.main"]
