@@ -13,16 +13,16 @@ services:
       - ums_data:/var/lib/postgresql/ums_data
   app:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     depends_on:
       - db
     env_file:
-      - ../.env
+      - .env
     volumes:
-      - ../ums:/app/ums  # Hot reload
+      - ums:/app/ums  # Hot reload
 
 volumes:
   ums_data:

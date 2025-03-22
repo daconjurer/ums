@@ -1,11 +1,16 @@
 name: tests
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+  workflow_call:
+    secrets:
+      POSTGRES_DB:
+        required: true
+      POSTGRES_USER:
+        required: true
+      POSTGRES_PASSWORD:
+        required: true
+      POSTGRES_HOST:
+        required: true
 
 jobs:
   tests-against-db:
@@ -29,12 +34,12 @@ jobs:
           - 5432:5432
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Run the tests
-      run: |
-        curl -sSL https://install.python-poetry.org | python3 -
-        poetry install
-        poetry run coverage run -m pytest tests --full-trace
-        poetry run coverage report -m
+      - name: Run the tests
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          poetry install
+          poetry run coverage run -m pytest tests --full-trace
+          poetry run coverage report -m
