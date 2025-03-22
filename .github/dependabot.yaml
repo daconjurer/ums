@@ -5,7 +5,7 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-- package-ecosystem: poetry
+- package-ecosystem: pip  # poetry
   directory: "/"
   schedule:
     interval: daily
