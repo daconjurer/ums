@@ -61,8 +61,8 @@ class GenericReader(IRead[Entity]):
         db: AsyncSessionStream,
         filter: BaseFilterParams | None = None,
         sort: SortParams | None = None,
-        limit: int | None = 5,
-        page: int | None = 1,
+        limit: int = 10,
+        page: int = 1,
     ) -> list[Entity]:
         """Read operation.
 
@@ -89,10 +89,9 @@ class GenericReader(IRead[Entity]):
             )
 
         # Apply pagination
-        if page is not None and limit is not None:
-            page = 1 if page < 1 else page
-            offset = (page - 1) * limit
-            statement = statement.offset(offset).limit(limit)
+        page = 1 if page < 1 else page
+        offset = (page - 1) * limit
+        statement = statement.offset(offset).limit(limit)
 
         # Query
         logger.debug(statement.compile(compile_kwargs={"literal_binds": True}))
