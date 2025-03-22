@@ -3,9 +3,13 @@ name: tests
 on:
   workflow_call:
     secrets:
-      DOCKER_USERNAME:
+      POSTGRES_DB:
         required: true
-      DOCKER_PASSWORD:
+      POSTGRES_USER:
+        required: true
+      POSTGRES_PASSWORD:
+        required: true
+      POSTGRES_HOST:
         required: true
 
 jobs:
