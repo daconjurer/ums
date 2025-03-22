@@ -80,16 +80,14 @@ class AsyncDatabaseConnection:
 
     def get_session(
         self,
-        current_request: Callable = current_task,
+        current_scope: Callable = current_task,
     ) -> async_scoped_session[AsyncSession]:
         """
         Returns a scoped session object. The `scopefunc` argument is set to the
         current thread by default. This can be overridden by passing a callable
         that returns a unique identifier (for instance, for the current request or task).
         """
-        return async_scoped_session(
-            self.get_session_factory(), scopefunc=current_request
-        )
+        return async_scoped_session(self.get_session_factory(), scopefunc=current_scope)
 
     async def test_connection(self) -> bool:
         try:
@@ -110,7 +108,7 @@ class AsyncSessionProvider(Protocol):
 
     def get_session(
         self,
-        current_request: Callable,
+        current_scope: Callable,
     ) -> async_scoped_session[AsyncSession]:
         ...
 
@@ -124,7 +122,7 @@ class AsyncSessionStream(Protocol):
     def __call__(
         self,
         connection: AsyncDatabaseConnection = db_connection,
-        current_request: Callable = current_task,
+        current_scope: Callable = current_task,
     ) -> AsyncContextManager[async_scoped_session[AsyncSession]]:
         ...
 
@@ -132,12 +130,12 @@ class AsyncSessionStream(Protocol):
 @asynccontextmanager
 async def get_async_session(
     connection: AsyncDatabaseConnection = db_connection,
-    current_request: Callable = current_task,
+    current_scope: Callable = current_task,
 ) -> AsyncIterator[async_scoped_session[AsyncSession]]:
     session: async_scoped_session[AsyncSession] | None = None
 
     try:
-        session = connection.get_session(current_request=current_request)
+        session = connection.get_session(current_scope=current_scope)
         yield session
     except SQLAlchemyError:
         if session is not None:

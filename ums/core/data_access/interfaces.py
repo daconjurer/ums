@@ -35,8 +35,8 @@ class IRead(Protocol[Entity]):
         db: AsyncSessionStream,
         filter: BaseFilterParams | None = None,
         sort: SortParams | None = None,
-        limit: int | None = 5,
-        page: int | None = 1,
+        limit: int = 10,
+        page: int = 1,
     ) -> list[Entity]:
         """Get many entities."""
         ...
