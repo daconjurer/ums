@@ -28,7 +28,7 @@ greenlet = "^3.1.1"
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.1.6"
 types-python-jose = "^3.3.4.8"
-types-passlib = "^1.7.7.13"
+types-passlib = "^1.7.7.20250322"
 coverage = "^7.3.4"
 httpx = "^0.26.0"
 pytest = "^8.0.0"
