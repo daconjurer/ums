@@ -109,11 +109,9 @@ class AsyncSessionProvider(Protocol):
     def get_session(
         self,
         current_scope: Callable,
-    ) -> async_scoped_session[AsyncSession]:
-        ...
+    ) -> async_scoped_session[AsyncSession]: ...
 
-    async def close_engine(self) -> None:
-        ...
+    async def close_engine(self) -> None: ...
 
 
 class AsyncSessionStream(Protocol):
@@ -123,8 +121,7 @@ class AsyncSessionStream(Protocol):
         self,
         connection: AsyncDatabaseConnection = db_connection,
         current_scope: Callable = current_task,
-    ) -> AsyncContextManager[async_scoped_session[AsyncSession]]:
-        ...
+    ) -> AsyncContextManager[async_scoped_session[AsyncSession]]: ...
 
 
 @asynccontextmanager
