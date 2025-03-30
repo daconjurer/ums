@@ -1,5 +1,4 @@
 from typing import Protocol
 
 
-class IService(Protocol):
-    ...
+class IService(Protocol): ...

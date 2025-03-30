@@ -20,7 +20,7 @@ class PostgresSettings(CommonSettings):
                 password=values.data.get("password", ""),
                 host=values.data.get("host", ""),
                 port=values.data.get("port", 5432),
-                path=f'{values.data.get("db", "")}',
+                path=f"{values.data.get('db', '')}",
             )
 
         # .docker.env file
