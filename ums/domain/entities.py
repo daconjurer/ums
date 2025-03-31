@@ -18,13 +18,18 @@ from sqlmodel import Field, Relationship, SQLModel
 
 class Base(SQLModel):
     id: uuid.UUID
-    created_at: datetime = Field(  # type: ignore [call-overload]
-        sa_type=TIMESTAMP(timezone=True), default=datetime.now(UTC)
+    created_at: datetime = Field(
+        sa_type=TIMESTAMP(timezone=True),  # type: ignore [call-overload]
+        default=datetime.now(UTC),
     )
-    updated_at: datetime = Field(  # type: ignore [call-overload]
-        sa_type=TIMESTAMP(timezone=True), default=datetime.now(UTC)
+    updated_at: datetime = Field(
+        sa_type=TIMESTAMP(timezone=True),  # type: ignore [call-overload]
+        default=datetime.now(UTC),
     )
-    deleted_at: datetime | None = Field(sa_type=TIMESTAMP(timezone=True), default=None)  # type: ignore [call-overload]
+    deleted_at: datetime | None = Field(
+        sa_type=TIMESTAMP(timezone=True),  # type: ignore [call-overload]
+        default=None,
+    )
 
 
 # Associative tables (many-to-many relationships)
