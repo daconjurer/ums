@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Type
 
 from loguru import logger
-from sqlalchemy import update
+from sqlalchemy import column, update
 from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session
 
 from ums.core.data_access.interfaces import Entity, IWrite
@@ -37,7 +37,7 @@ class GenericWriter(IWrite[Entity]):
         logger.info(f"Updating {self.model.__name__}")
         await session.execute(
             update(self.model)
-            .where(self.model.id == entity.id)
+            .where(column("id") == entity.id)
             .values(**entity.model_dump())
         )
         return entity
