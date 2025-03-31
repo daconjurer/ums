@@ -313,5 +313,5 @@ async def valid_user_with_no_scopes(async_session):
 
 
 @pytest_asyncio.fixture
-def client() -> TestClient:
+async def client() -> TestClient:
     return TestClient(app=create_app())
