@@ -1416,14 +1416,14 @@ full = ["httpx (>=0.27.0,<0.29.0)", "itsdangerous", "jinja2", "python-multipart 
 
 [[package]]
 name = "types-passlib"
-version = "1.7.7.20250326"
+version = "1.7.7.20250602"
 description = "Typing stubs for passlib"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "types_passlib-1.7.7.20250326-py3-none-any.whl", hash = "sha256:50a783254fb173e250ac85fb451243352ccecb4cfd149b7122c1dc07492d1af9"},
-    {file = "types_passlib-1.7.7.20250326.tar.gz", hash = "sha256:5d037bfb3b65b2bfd36936b784a7f44635bf6909fea4d57746ae80610b89325d"},
+    {file = "types_passlib-1.7.7.20250602-py3-none-any.whl", hash = "sha256:ed73a91be9a22484ebd62cc0d127675ded542b892b99776db92dab760bbfe274"},
+    {file = "types_passlib-1.7.7.20250602.tar.gz", hash = "sha256:cf2350e78d36b6b09e4db44284d96651b57285f499cfabf111b616065abab7b3"},
 ]
 
 [[package]]
@@ -1741,4 +1741,4 @@ dev = ["black (>=19.3b0) ; python_version >= \"3.6\"", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12, <3.14"
-content-hash = "4207da8f686e7deaf38db44c59573c2a93fbe8faa41432f67420175e457cea41"
+content-hash = "642f9c1922969f49a918aac50641d62497767b01bf34cc42ee8e3b53f12b63ca"
