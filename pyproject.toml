@@ -16,7 +16,7 @@ pydantic = {extras = ["email"], version = "^2.11.1"}
 loguru = "^0.7.2"
 python-jose = {extras = ["cryptography"], version = "^3.4.0"}
 python-multipart = "^0.0.20"
-pydantic-settings = "^2.1.0"
+pydantic-settings = "^2.10.0"
 sqlmodel = "^0.0.24"
 psycopg2-binary = "^2.9.9"
 email-validator = "^2.1.0.post1"
